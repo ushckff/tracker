@@ -1,0 +1,766 @@
+<!doctype html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Frontend · Тренажёр</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --font:'Inter',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --display:'Space Grotesk',var(--font);
+    --mono:ui-monospace,'SF Mono','JetBrains Mono',Menlo,monospace;
+    --bg:#0d0f15; --bg2:#141821; --surface:#181d29; --card:#1c2230;
+    --line:#272e3d; --line2:#323b4d;
+    --text:#e9ecf3; --muted:#959db0; --faint:#727b8e;
+    --accent:#7c6cff; --accent2:#33d6c6;
+    --know:#3ecf8e; --recall:#f6b541; --dont:#f15c7f;
+    --shadow:0 20px 50px -20px rgba(0,0,0,.7);
+    --radius:18px;
+  }
+  [data-theme="light"]{
+    --bg:#f3f4f8; --bg2:#eef0f6; --surface:#ffffff; --card:#ffffff;
+    --line:#e6e9f0; --line2:#d8dce6;
+    --text:#1a1f2b; --muted:#5c6678; --faint:#8a93a6;
+    --shadow:0 20px 45px -22px rgba(31,41,75,.28);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--font);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased;
+    background:
+      radial-gradient(900px 500px at 85% -10%,rgba(124,108,255,.16),transparent 60%),
+      radial-gradient(700px 500px at 0% 0%,rgba(51,214,198,.10),transparent 55%),
+      var(--bg);}
+  .wrap{max-width:880px;margin:0 auto;padding:22px 18px 60px}
+  button{user-select:none;-webkit-user-select:none}
+
+  .top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:11px;margin-right:auto}
+  .logo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    font-family:var(--display);font-weight:700;color:#fff;font-size:18px;box-shadow:0 6px 18px -6px var(--accent)}
+  .brand h1{font-family:var(--display);font-size:18px;margin:0;letter-spacing:-.2px}
+  .brand p{margin:0;font-size:12px;color:var(--muted)}
+  .iconbtn{background:var(--surface);border:1px solid var(--line);color:var(--text);
+    width:38px;height:38px;border-radius:11px;cursor:pointer;font-size:16px;display:grid;place-items:center;transition:.15s}
+  .iconbtn:hover{border-color:var(--line2);transform:translateY(-1px)}
+  .seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:11px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--muted);padding:9px 15px;cursor:pointer;font-size:13px;font-weight:600;font-family:var(--font);transition:.15s}
+  .seg button.on{background:var(--accent);color:#fff}
+
+  .stats{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;margin-bottom:16px}
+  .statrow{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:12px;flex-wrap:wrap}
+  .mastery{font-family:var(--display);font-size:15px}
+  .mastery b{font-size:22px;color:var(--accent2);margin-right:4px}
+  .streak{display:flex;align-items:center;gap:7px;font-family:var(--display);font-size:14px;color:var(--muted)}
+  .streak b{color:var(--recall);font-size:18px}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px;color:var(--muted)}
+  .dot{width:8px;height:8px;border-radius:50%}
+  .d-know{background:var(--know)}.d-recall{background:var(--recall)}.d-dont{background:var(--dont)}
+  .bar{height:10px;border-radius:6px;overflow:hidden;display:flex;background:var(--bg2);border:1px solid var(--line)}
+  .bar i{display:block;height:100%;transition:width .3s}
+  .bar .s-know{background:var(--know)}.bar .s-recall{background:var(--recall)}.bar .s-dont{background:var(--dont)}
+
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:150px}
+  .field label{font-size:11px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint);font-family:var(--mono)}
+  select{appearance:none;background:var(--surface);border:1px solid var(--line);color:var(--text);padding:10px 12px;border-radius:11px;font-size:13px;font-family:var(--font);cursor:pointer;width:100%}
+  select:focus{outline:none;border-color:var(--accent)}
+
+  /* мультиселект */
+  .ms{position:relative}
+  .ms-btn{width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);color:var(--text);
+    padding:10px 12px;border-radius:11px;font-size:13px;font-family:var(--font);cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .ms-btn:after{content:'▾';color:var(--faint);font-size:11px}
+  .ms-btn.open{border-color:var(--accent)}
+  .ms-panel{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:var(--card);border:1px solid var(--line2);
+    border-radius:12px;box-shadow:var(--shadow);padding:6px;max-height:300px;overflow:auto;display:none}
+  .ms-panel.open{display:block}
+  .ms-actions{padding:2px 4px 8px}
+  .ms-actions button{width:100%;font-size:11px;padding:7px;border-radius:8px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-family:var(--font)}
+  .ms-actions button:hover{color:var(--text);border-color:var(--line2)}
+  .ms-opt{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:8px;cursor:pointer;font-size:13px}
+  .ms-opt:hover{background:var(--bg2)}
+  .ms-opt input{accent-color:var(--accent);width:15px;height:15px;cursor:pointer}
+
+  .stage{position:relative;perspective:1600px;margin-bottom:16px}
+  .deck-edge{position:absolute;left:50%;top:10px;transform:translateX(-50%);height:30px;border-radius:16px;background:var(--card);border:1px solid var(--line);z-index:0}
+  .deck-1{width:90%;top:-9px;opacity:.5}.deck-2{width:95%;top:-4px;opacity:.8}
+  .card{position:relative;z-index:1;min-height:400px;transform-style:preserve-3d;transition:transform .55s cubic-bezier(.4,0,.2,1)}
+  .card.flipped{transform:rotateY(180deg)}
+  .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    background:linear-gradient(180deg,var(--card),var(--surface));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;display:flex;flex-direction:column}
+  .back{transform:rotateY(180deg)}
+  .face-head{display:flex;align-items:center;gap:10px;margin-bottom:16px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.4px;color:var(--accent);font-weight:600}
+  .level{margin-left:auto;font-size:11px;font-family:var(--mono);padding:3px 10px;border-radius:20px;border:1px solid;font-weight:600}
+  .statustag{font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+  .front{user-select:none}
+  .front .topic{font-family:var(--display);font-size:29px;line-height:1.18;margin:auto 0;font-weight:600;letter-spacing:-.4px}
+  .front .hint{color:var(--faint);font-size:13px;margin-top:18px;display:flex;align-items:center;gap:8px}
+  .kbd{font-family:var(--mono);font-size:11px;background:var(--bg2);border:1px solid var(--line2);border-radius:6px;padding:2px 7px;color:var(--muted)}
+  .back .topic{font-family:var(--display);font-size:19px;font-weight:600;margin-bottom:14px;letter-spacing:-.2px}
+  .back-cols{display:grid;grid-template-columns:1.05fr .95fr;gap:16px;flex:1;min-height:0}
+  .back-col{display:flex;flex-direction:column;min-height:0}
+  .col-q{border-left:1px solid var(--line);padding-left:16px}
+  .back-col h4{margin:0 0 9px;font-family:var(--mono);font-size:11px;letter-spacing:.6px;text-transform:uppercase;color:var(--accent)}
+  .col-q h4{color:var(--accent2)}
+  .scroll{overflow:auto;flex:1;padding-right:4px}
+  .scroll::-webkit-scrollbar{width:6px}
+  .scroll::-webkit-scrollbar-thumb{background:var(--line2);border-radius:8px}
+  .detail{font-size:14px;line-height:1.5;margin:0;padding-left:18px}
+  .detail li{margin-bottom:8px}
+  .detail li::marker{color:var(--accent)}
+  .qs{font-size:13.5px;line-height:1.45;margin:0;padding-left:18px;color:var(--muted)}
+  .qs li{margin-bottom:10px}
+  .qs li::marker{color:var(--accent2);font-weight:700}
+
+  .controls{display:flex;flex-direction:column;gap:12px}
+  .draw{width:100%;padding:17px;border:0;border-radius:14px;cursor:pointer;color:#fff;font-size:16px;font-weight:600;font-family:var(--font);background:linear-gradient(135deg,var(--accent),#6a59f5);box-shadow:0 2px 10px -6px var(--accent);transition:.15s}
+  .draw:hover{transform:translateY(-1px);box-shadow:0 4px 14px -8px var(--accent)}
+  .draw:active{transform:translateY(0)}
+  .rate{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .rate button{padding:14px 8px;border-radius:13px;cursor:pointer;font-weight:600;font-size:14px;font-family:var(--font);border:1px solid var(--line);background:var(--surface);color:var(--text);transition:.15s;display:flex;flex-direction:column;align-items:center;gap:3px}
+  .rate button small{font-size:11px;color:var(--faint);font-family:var(--mono)}
+  .rate button:hover{transform:translateY(-2px)}
+  .rate .r-dont:hover{border-color:var(--dont)}
+  .rate .r-recall:hover{border-color:var(--recall)}
+  .rate .r-know:hover{border-color:var(--know)}
+  .ghost{background:transparent;border:1px solid var(--line);color:var(--muted);padding:9px 14px;border-radius:11px;cursor:pointer;font-size:13px;font-family:var(--font);font-weight:600;transition:.15s}
+  .ghost:hover{border-color:var(--line2);color:var(--text)}
+  .empty{background:var(--surface);border:1px dashed var(--line2);border-radius:var(--radius);padding:40px 24px;text-align:center;color:var(--muted);min-height:400px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+  .empty .big{font-family:var(--display);font-size:21px;color:var(--text)}
+
+  .view{display:none}
+  .view.on{display:flex;flex-direction:column;gap:16px}
+  .grp{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .grp h3{margin:0;padding:13px 16px;font-family:var(--display);font-size:14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--line);cursor:pointer}
+  .grp h3 .chev{display:inline-block;color:var(--faint);font-size:11px;transition:transform .3s ease}
+  .grp.open h3 .chev{transform:rotate(90deg)}
+  .grp h3 .count{margin-left:auto;font-size:11px;color:var(--faint);font-family:var(--mono);font-weight:400}
+  .grp .rows{display:grid;grid-template-rows:0fr;transition:grid-template-rows .35s ease}
+  .grp.open .rows{grid-template-rows:1fr}
+  .grp .rows-inner{overflow:hidden}
+  .row{display:flex;align-items:center;gap:11px;padding:11px 16px;border-top:1px solid var(--line);cursor:pointer;transition:.12s}
+  .row:hover{background:var(--bg2)}
+  .row .rdot{width:9px;height:9px;border-radius:50%;flex:none}
+  .row .rtopic{font-size:13.5px;flex:1}
+  .row .rlevel{font-family:var(--mono);font-size:10px;padding:2px 7px;border-radius:10px;border:1px solid var(--line2)}
+
+  footer{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--card);border:1px solid var(--line2);color:var(--text);padding:11px 18px;border-radius:12px;font-size:13px;box-shadow:var(--shadow);transition:.25s;pointer-events:none;z-index:50}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  @media (max-width:560px){
+    .front .topic{font-size:24px}.brand p{display:none}
+    .back-cols{grid-template-columns:1fr;gap:14px}
+    .col-q{border-left:0;border-top:1px solid var(--line);padding-left:0;padding-top:14px}
+    .card,.empty{min-height:460px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <div class="logo">FE</div>
+      <div><h1>Frontend · Тренажёр</h1><p>интервальное повторение по чеклисту</p></div>
+    </div>
+    <div class="seg" id="viewSeg">
+      <button data-view="study" class="on">Карточки</button>
+      <button data-view="browse">Список</button>
+    </div>
+    <button class="iconbtn" id="themeBtn" title="Тема">◐</button>
+  </div>
+
+  <div class="stats">
+    <div class="statrow">
+      <div class="mastery"><b id="mPct">0%</b><span style="color:var(--muted)">освоено</span></div>
+      <div class="streak">🔥 <b id="streak">0</b> дней подряд</div>
+      <div class="chips" id="chips"></div>
+    </div>
+    <div class="bar" id="bar"><i class="s-know"></i><i class="s-recall"></i><i class="s-dont"></i></div>
+  </div>
+
+  <div class="filters" id="filters">
+    <div class="field"><label>Темы</label><div class="ms" id="msCat"></div></div>
+    <div class="field"><label>Уровни</label><div class="ms" id="msLevel"></div></div>
+    <div class="field"><label>Статус</label>
+      <select id="fStatus">
+        <option value="all">Все</option>
+        <option value="dont">Не знаю</option>
+        <option value="recall">Частично</option>
+        <option value="know">Знаю</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="view on" id="studyView">
+    <div id="cardHost"></div>
+    <div class="controls">
+      <button class="draw" id="drawBtn">Выдать тему ↵</button>
+      <div id="rateHost"></div>
+    </div>
+  </div>
+
+  <div class="view" id="browseView"></div>
+
+  <footer>
+    <button class="ghost" id="exportBtn">Экспорт</button>
+    <button class="ghost" id="importBtn">Импорт</button>
+    <button class="ghost" id="resetBtn">Сбросить всё</button>
+    <input type="file" id="fileInput" accept="application/json" hidden>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* =========================================================
+   КОЛОДА: [блок, тема, уровень, [что нужно знать], [вопросы для проверки]]
+   уровни: intern / junior / junior+ / middle / middle+ / senior
+   ========================================================= */
+const RAW = [
+// ===== HTML/CSS =====
+["HTML/CSS","Семантика HTML","intern",[`смысловые теги: header/nav/main/article/section/footer`,`button для действий, a — для переходов, не div`,`зачем: доступность, SEO, навигация с клавиатуры`],[`Визуально div и section одинаковы — кому и зачем тогда нужна разница?`,`Чем поведение button отличается от div с onClick для клавиатуры и форм?`,`Когда div оправдан, а семантический тег — лишний?`,`Можно ли иметь несколько main и почему?`,`Как выбрать между article и section для блока контента?`]],
+["HTML/CSS","Доступность (a11y) и ARIA","middle",[`сначала семантика, ARIA — когда нет нативного тега`,`роли и состояния (aria-*), фокус, tabindex`,`alt, label, контраст, aria-live`],[`Почему «побольше ARIA» часто делает хуже, а не лучше?`,`Что именно нужно, чтобы кастомный дропдаун работал с клавиатуры?`,`Чем aria-hidden, display:none и visibility:hidden отличаются для скринридера?`,`Когда нужен aria-live и какую politeness выбрать?`,`Как ловить проблемы доступности без скринридера?`]],
+["HTML/CSS","Box model и box-sizing","intern",[`content + padding + border + margin`,`box-sizing: border-box`,`схлопывание margin (margin collapse)`],[`Почему по умолчанию width не включает padding и border?`,`Когда схлопывание margin сыграет неожиданно и как это предотвратить?`,`Зачем многие ставят border-box глобально через *?`,`Как margin ребёнка может «вытечь» за пределы родителя?`,`Чем отличается отступ через padding и через margin для кликабельной зоны?`]],
+["HTML/CSS","Позиционирование","junior",[`static / relative / absolute / fixed / sticky`,`absolute — от ближайшего позиционированного предка`,`смещения top/right/bottom/left`],[`Почему absolute иногда считается от всего экрана, а не от родителя?`,`Чем sticky отличается от fixed и где он «отлипает»?`,`Как absolute влияет на поток и размеры соседей?`,`Почему fixed-элемент перестаёт быть фиксированным при transform у предка?`,`Как отцентрировать absolute-элемент, не зная его размеров?`]],
+["HTML/CSS","z-index и stacking context","middle",[`контекст наложения создают position+z-index, opacity, transform`,`z-index работает только внутри своего контекста`,`почему элемент «не перекрывается»`],[`Почему z-index: 9999 не перекрыл соседний элемент?`,`Как opacity: 0.99 может неожиданно сломать наложение?`,`Какие свойства создают новый stacking context кроме z-index?`,`Как сравниваются по z элементы из разных контекстов?`,`Как отлаживать проблему наложения в DevTools?`]],
+["HTML/CSS","Flexbox","junior",[`оси: главная и поперечная`,`justify-content, align-items, align-self`,`flex-grow / shrink / basis, flex-wrap`],[`Чем flex: 1 1 0 отличается от flex: 1 1 auto при разном контенте?`,`Почему flex-элемент не сжимается ниже контента и при чём тут min-width?`,`Как выровнять один элемент иначе, чем остальные?`,`Чем justify-content отличается от align-content при переносе строк?`,`Как «прижать футер вниз» через flex?`]],
+["HTML/CSS","Grid","junior+",[`grid-template-columns/rows, fr, repeat()`,`gap, grid-area, размещение по линиям`,`auto-fit/auto-fill + minmax`],[`Когда Grid принципиально удобнее Flexbox и наоборот?`,`Чем auto-fit отличается от auto-fill при пустых ячейках?`,`Что делает minmax(0, 1fr) и зачем именно 0?`,`Как разместить элемент на пересечении конкретных линий?`,`Какие ограничения мешают сделать настоящий masonry на Grid?`]],
+["HTML/CSS","Специфичность и каскад","junior+",[`вес: inline > id > class > tag`,`!important, источник, порядок правил`,`наследование`],[`Как посчитать специфичность для составного селектора?`,`Стиль «правильный», но не применился — что проверишь по порядку?`,`Как :where() помогает управлять специфичностью?`,`Когда !important оправдан, а когда это запах кода?`,`Как конкурируют inline-стиль и правило с !important?`]],
+["HTML/CSS","Адаптивность и media queries","junior",[`mobile-first`,`@media по ширине/ориентации`,`точки останова (breakpoints)`],[`Почему mobile-first проще поддерживать, чем desktop-first?`,`Точки останова выбирать по устройствам или по контенту — почему?`,`Чем полезны prefers-color-scheme и prefers-reduced-motion?`,`Когда контейнерные запросы лучше медиа-запросов?`,`Как одна media query может неожиданно перебить другую (порядок/специфичность)?`]],
+["HTML/CSS","Единицы измерения","junior",[`абсолютные px vs относительные`,`rem/em/%/vw/vh/ch`,`clamp() / min() / max()`],[`Почему em «накапливается» при вложенности, а rem — нет?`,`Чем vh опасен на мобильных и как clamp спасает?`,`Как сделать «текучую» типографику через clamp?`,`Где удобен ch и что он измеряет?`,`Когда px лучше rem (border, hairline) и почему?`]],
+["HTML/CSS","Псевдоклассы и псевдоэлементы","junior+",[`:hover/:focus/:nth-child/:not`,`::before/::after (content)`,`:focus-visible`],[`Чем :focus-visible лучше :focus для UX и когда это важно?`,`Почему псевдоэлемент требует content и что туда можно класть?`,`Как :nth-child и :nth-of-type дают разный результат на одной разметке?`,`Как :not() и :is() упрощают сложные селекторы?`,`Как ::before/::after сделать декор без лишней разметки и где их пределы?`]],
+["HTML/CSS","BEM и организация CSS","junior+",[`block__element--modifier`,`борьба с глобальностью и каскадом`,`альтернативы: CSS Modules, утилиты`],[`Какую конкретную боль глобального CSS решает BEM?`,`Где граница между модификатором и отдельным блоком?`,`Почему глубокая вложенность селекторов — антипаттерн?`,`Чем BEM проигрывает CSS Modules и наоборот?`,`Как BEM уживается с утилитарным Tailwind?`]],
+["HTML/CSS","CSS Modules и CSS-in-JS","middle",[`Modules: локальные классы на этапе сборки`,`CSS-in-JS (styled/emotion): стили в JS`,`плюсы/минусы изоляции и рантайма`],[`Как CSS Modules добиваются локальности классов?`,`Какова цена рантайма у CSS-in-JS и когда она критична?`,`Чем zero-runtime (Linaria) отличается от styled-components?`,`Почему CSS-in-JS усложняет SSR?`,`Как темизация решается в каждом из подходов?`]],
+["HTML/CSS","Анимации и переходы","middle",[`transition (от состояния к состоянию)`,`@keyframes / animation`,`timing-функции, задержки, повторы`],[`Когда transition не сработает (display:none, height:auto)?`,`Как анимировать появление/удаление элемента из DOM?`,`Чем cubic-bezier гибче ease и зачем своя кривая?`,`Как prefers-reduced-motion должен влиять на анимации?`,`Чем анимация height дороже, чем transform: scaleY?`]],
+["HTML/CSS","transform/opacity и производительность","middle",[`дёшево для GPU: transform и opacity`,`дорого: width/top/left (вызывают reflow)`,`will-change как подсказка браузеру`],[`Почему transform и opacity анимируются на GPU, а width — нет?`,`Что такое слой композиции и когда will-change его создаёт?`,`Чем опасно злоупотребление will-change?`,`Как анимация top/left вызывает reflow на каждом кадре?`,`Как убедиться, что анимация идёт в 60fps?`]],
+["HTML/CSS","CSS-переменные","junior+",[`--var и var(), каскад и рантайм`,`смена из JS`,`основа темизации`],[`Чем рантайм-природа CSS-переменных отличается от переменных Sass?`,`Как каскад переменных даёт «темизацию по поддереву»?`,`Как сменить тему мгновенно из JS одной строкой?`,`Можно ли анимировать CSS-переменную и какие подвохи?`,`Как дать переменной фоллбэк и зачем это нужно?`]],
+["HTML/CSS","Container queries","middle",[`запрос по размеру контейнера, а не вьюпорта`,`container-type / container`,`для переиспользуемых компонентов`],[`Какую проблему переиспользуемых компонентов решают, а media — нет?`,`Что нужно объявить на контейнере, чтобы запрос заработал?`,`Чем полезны единицы cqw/cqh?`,`Что нельзя запросить через container queries?`,`Как они меняют подход к адаптивности в дизайн-системе?`]],
+["HTML/CSS","Современные селекторы (:has, :is, :where)","middle",[`:has() — выбор по потомку («родительский»)`,`:is() / :where() — группировка`,`:where() имеет нулевую специфичность`],[`Что раньше требовало JS, а теперь делает :has()?`,`Чем :where() отличается от :is() по специфичности и почему это важно?`,`Как :has() стилизует родителя по состоянию ребёнка?`,`Какова цена :has() для производительности?`,`Приведи пример формы, где :has() заменяет JS визуально.`]],
+["HTML/CSS","SEO-основы","junior+",[`title, meta description, заголовки h1-h6`,`Open Graph, canonical, robots, sitemap`,`семантика и доступность помогают SEO`],[`Почему один h1 и осмысленные заголовки важны для SEO?`,`Зачем Open Graph и что покажет соцсеть без него?`,`Как canonical решает проблему дублей контента?`,`Чем SSR/SSG лучше CSR для поисковиков и почему?`,`Как семантика и alt влияют на ранжирование?`]],
+["HTML/CSS","Кроссбраузерность","middle",[`@supports — проверка поддержки фич`,`вендор-префиксы, autoprefixer`,`прогрессивное улучшение, фоллбэки`],[`Как @supports реализует прогрессивное улучшение?`,`Чем feature detection лучше user-agent sniffing?`,`Как обеспечить фоллбэк для незнакомой фичи?`,`Откуда autoprefixer знает, какие префиксы нужны?`,`Как тестировать на реальных движках, а не только в Chrome?`]],
+// ===== JavaScript =====
+["JavaScript","Типы данных","intern",[`7 примитивов + объекты`,`по значению vs по ссылке`,`typeof null === 'object' (баг языка)`],[`Почему typeof null === 'object' и о чём это говорит?`,`Что вернёт сравнение двух объектов с одинаковым содержимым через ===?`,`Как примитив «получает» методы (.toUpperCase), не будучи объектом?`,`Когда осмысленно использовать Symbol как ключ?`,`Чем BigInt отличается от Number и где он реально нужен?`]],
+["JavaScript","Приведение типов","junior",[`== vs === (использовать ===)`,`truthy/falsy: 0, '', null, undefined, NaN, false`,`'' + 1 (строка) vs '' - 1 (число)`],[`Что выведет [] == ![] и почему (по шагам)?`,`Как '' + 1, '' - 1 и null + 1 дают разные результаты?`,`Почему NaN === NaN ложно и как корректно проверить на NaN?`,`Что произойдёт при if ([]) и if ('0')?`,`Когда == «безопаснее» === и стоит ли вообще его использовать?`]],
+["JavaScript","Область видимости и hoisting","junior",[`var (функц.) vs let/const (блочн.)`,`hoisting, TDZ`,`shadowing`],[`Что будет при доступе к let до объявления и почему (TDZ)?`,`Как hoisting по-разному работает для var, function и class?`,`Почему функциональное выражение и объявление ведут себя по-разному?`,`Как блочная область let меняет поведение в циклах?`,`Когда shadowing маскирует баг?`]],
+["JavaScript","Замыкания","junior+",[`функция помнит внешние переменные`,`баг var в цикле + setTimeout (фикс let/IIFE)`,`приватность, мемоизация, фабрики`],[`Почини классический for(var i)+setTimeout тремя способами.`,`Почему замыкание может стать причиной утечки памяти?`,`Захватывает ли замыкание значение или ссылку на переменную?`,`Как замыканием сделать приватный счётчик?`,`Как замыкания работают в каррировании и мемоизации?`]],
+["JavaScript","this, call/apply/bind","junior+",[`4 правила: default / implicit / explicit / new`,`call / apply (аргументы) / bind (привязка)`,`стрелочные — лексический this`],[`obj.method передали в setTimeout — почему this теряется и как починить?`,`Чем опасна стрелочная функция в роли метода объекта?`,`Что вернёт new для функции, которая возвращает объект?`,`Как bind делает частичное применение?`,`Какой this в обработчике события и в колбэке map?`]],
+["JavaScript","Прототипы и наследование","middle",[`цепочка прототипов, поиск свойств`,`__proto__ vs prototype`,`Object.create, class, extends`],[`Объясни разницу __proto__ и prototype на конкретном примере.`,`Как идёт поиск свойства, если оно есть и в объекте, и в прототипе?`,`Почему добавление метода в prototype влияет на уже созданные объекты?`,`Чем class под капотом отличается (или нет) от прототипного наследования?`,`Как hasOwnProperty отличает своё свойство от унаследованного?`]],
+["JavaScript","Классы (ES6)","junior+",[`class / constructor / extends / super`,`static, геттеры/сеттеры`,`приватные поля #`],[`Что делает super() и что будет, если его забыть в наследнике?`,`Чем приватное поле # отличается от соглашения _name?`,`Почему методы класса не перечислимы, а свойства — да?`,`Где на практике нужны static-методы и поля?`,`Теряется ли this у метода класса при передаче в колбэк?`]],
+["JavaScript","Event Loop","middle",[`call stack`,`микротаски (Promise) vs макротаски (setTimeout)`,`порядок: sync, потом все микротаски, потом одна макротаска`],[`Дан код с Promise.then и setTimeout вперемешку — в каком порядке выведется?`,`Почему длинный синхронный цикл «вешает» промисы и таймеры?`,`Чем микротаска приоритетнее макротаски?`,`Что будет, если микротаска бесконечно планирует новую микротаску?`,`Куда попадает колбэк rAF относительно микротасок?`]],
+["JavaScript","Промисы и async/await","junior+",[`состояния, then/catch/finally`,`all / allSettled / race / any`,`try/catch вокруг await`],[`Чем Promise.all отличается от allSettled, если одна промиса упала?`,`Что вернёт async-функция, бросившая исключение?`,`Почему await в цикле for последовательный, а Promise.all — параллельный?`,`Как в Promise.all поймать ошибку и не потерять остальные результаты?`,`Что произойдёт с непойманным реджектом промиса?`]],
+["JavaScript","Функции высшего порядка","junior+",[`принимают/возвращают функции`,`колбэки`,`композиция`],[`Чем композиция f(g(x)) отличается от пайплайна и почему порядок важен?`,`Реализуй функцию, считающую, сколько раз её вызвали.`,`Зачем частичное применение на практике?`,`Чем map/filter лучше цикла в плане читаемости и багов?`,`В чём разница каррирования и частичного применения?`]],
+["JavaScript","Методы массивов","junior",[`map/filter/reduce/find/some/every`,`что мутирует: sort, splice, reverse`,`reduce — свёртка в любое значение`],[`Что может reduce, чего не могут map и filter?`,`Какие методы мутируют массив и как это приводит к багам в React?`,`Что вернёт [1,2,3].map(parseInt) и почему?`,`Как за один проход сгруппировать массив в объект?`,`Чем sort опасен по умолчанию и как починить порядок чисел?`]],
+["JavaScript","Деструктуризация, spread/rest","junior",[`деструктуризация с дефолтами/переименованием`,`spread (копия/слияние)`,`rest-параметры`],[`Как поменять две переменные местами через деструктуризацию?`,`Чем spread отличается от Object.assign и оба — поверхностные?`,`Что произойдёт со вложенными объектами при spread?`,`Как задать дефолт и переименование одновременно?`,`Чем rest-параметр отличается от arguments?`]],
+["JavaScript","Опциональная цепочка и nullish","junior",[`?. — безопасный доступ`,`?? (vs ||, не ловит 0 и '')`,`??=`],[`Чем ?? принципиально отличается от || для значений 0 и ''?`,`Почему a?.b?.c удобно, но может скрыть баг?`,`Что вернёт obj?.method?.(), если method нет?`,`Как ??= упрощает «задать, если пусто»?`,`Когда ?. возвращает undefined вместо ошибки и хорошо ли это?`]],
+["JavaScript","Модули (ESM vs CommonJS)","junior+",[`import/export (статично) vs require (динамично)`,`import() возвращает промис`,`связь с tree-shaking`],[`Почему ESM можно tree-shake, а CommonJS обычно нет?`,`Чем статический import отличается от dynamic import() по моменту загрузки?`,`Что такое циклическая зависимость и как её переживает ESM?`,`Почему импорты «поднимаются» наверх модуля?`,`Как сделать ленивую загрузку модуля по требованию?`]],
+["JavaScript","Иммутабельность","middle",[`копии вместо мутаций`,`Object.freeze (поверхностно)`,`важно для React: сравнение по ссылке`],[`Почему мутация state ломает обнаружение изменений в React?`,`Глубоко ли Object.freeze и как заморозить вложенно?`,`Как иммутабельно обновить глубоко вложенное поле без боли?`,`Чем иммутабельность помогает undo/redo и отладке?`,`Какова цена создания копий и когда это проблема?`]],
+["JavaScript","Поверхностное vs глубокое копирование","junior+",[`spread/Object.assign — верхний уровень`,`structuredClone — глубоко`,`spread не клонирует вложенное`],[`Почему spread не спасает от мутации вложенного объекта?`,`Чем structuredClone лучше JSON.parse(JSON.stringify())?`,`Что теряется при копировании через JSON (функции, Date, undefined)?`,`Как глубокое копирование обрабатывает циклические ссылки?`,`Когда глубокое копирование — это лишняя дороговизна?`]],
+["JavaScript","Сборщик мусора и утечки памяти","middle+",[`достижимость, mark-and-sweep`,`утечки: таймеры, подписки, detached DOM, глобалы`,`поиск через heap snapshot`],[`Что такое «достижимость» и как объект становится мусором?`,`Назови 4 типичные утечки в SPA и как каждую починить.`,`Почему забытый таймер держит в памяти весь компонент?`,`Чем WeakMap помогает избежать утечки?`,`Как найти утечку через сравнение heap snapshot?`]],
+["JavaScript","Map и Set","middle",[`Map: любые ключи, порядок, size`,`Set: уникальные значения`,`когда вместо объекта/массива`],[`Назови три причины выбрать Map вместо объекта.`,`Почему порядок ключей в Map гарантирован, а в объекте — «почти»?`,`Какие подвохи у Set при дедупликации (NaN, объекты)?`,`Чем Map быстрее объекта при частых добавлениях/удалениях?`,`Что даёт возможность использовать объект как ключ Map?`]],
+["JavaScript","WeakMap и WeakSet","middle+",[`слабые ссылки на ключи-объекты`,`не мешают сборке мусора, не итерируются`,`кейсы: приватные данные, кэш`],[`Зачем нужны слабые ссылки и как они помогают GC?`,`Почему WeakMap нельзя итерировать и в чём смысл ограничения?`,`Как WeakMap реализует приватные данные объекта?`,`Чем WeakMap лучше Map для кэша по объектам?`,`Что станет с записью, когда ключ-объект больше не используется?`]],
+["JavaScript","Генераторы и итераторы","middle",[`Symbol.iterator, next()`,`function*, yield, ленивость`,`как работает for..of изнутри`],[`Как генератором сделать ленивую бесконечную последовательность?`,`Что делает yield и как функция «приостанавливается»?`,`Как объект сделать итерируемым через Symbol.iterator?`,`Чем for..of под капотом отличается от for..in?`,`Где генераторы реально полезны (пагинация, корутины)?`]],
+["JavaScript","Proxy и Reflect","senior",[`перехват get/set/has/deleteProperty`,`реактивность (Vue/MobX), валидация`,`Reflect — «стандартные» операции`],[`Как Proxy реализует реактивность, как в Vue 3?`,`Какие ловушки есть и что именно перехватывает get/set?`,`Зачем нужен Reflect, если можно писать обычные операции?`,`Какие подвохи у Proxy по производительности?`,`Как через Proxy сделать валидацию или логирование доступа?`]],
+["JavaScript","Регулярные выражения","junior+",[`классы, кванторы, группы`,`флаги g/i/m`,`test / match / replace`],[`Чем жадный квантификатор отличается от ленивого и когда это критично?`,`Что такое catastrophic backtracking и как его избежать?`,`Чем отличаются test, match и matchAll по результату?`,`Зачем именованные группы захвата?`,`Как флаг y (sticky) меняет поведение поиска?`]],
+["JavaScript","Обработка ошибок","middle",[`try / catch / finally`,`throw`,`кастомные ошибки (extends Error)`],[`Зачем кастомные классы ошибок вместо строк?`,`Что выполнится в finally, если в try был return?`,`Почему try/catch не ловит реджект промиса без await?`,`Чем отличается обработка ошибок в .catch и в async/await?`,`Как глобально перехватить непойманные ошибки и реджекты?`]],
+["JavaScript","Числа и точность","junior+",[`числа — это float64 (IEEE 754)`,`0.1 + 0.2 !== 0.3`,`Number.MAX_SAFE_INTEGER, BigInt`],[`Почему 0.1 + 0.2 даёт 0.30000000000000004?`,`Как безопасно сравнивать дробные числа?`,`Как считать деньги без ошибок плавающей точки?`,`Когда упираешься в предел и нужен BigInt?`,`Чем parseInt отличается от Number и Math.floor на строках?`]],
+["JavaScript","Дата и время","middle",[`Date, метки времени, UTC`,`часовые пояса — источник багов`,`Intl.DateTimeFormat, Temporal/date-fns`],[`Почему работа с Date в JS считается болезненной?`,`Как таймзоны ломают наивные вычисления дат?`,`Чем new Date('2024-01-01') отличается по таймзоне от new Date('2024-01-01T00:00')?`,`Что даёт Intl.DateTimeFormat для локализации?`,`Когда нужна библиотека (date-fns/Temporal) вместо нативного Date?`]],
+["JavaScript","JSON","junior",[`JSON.stringify / JSON.parse`,`replacer / reviver`,`не сериализует функции, undefined, циклы`],[`Что теряется при JSON.stringify (Date, undefined, функции)?`,`Зачем нужны replacer и reviver?`,`Как обработать циклическую ссылку при сериализации?`,`Чем JSON отличается от объекта JS (кавычки, типы)?`,`Как безопасно распарсить потенциально невалидный JSON?`]],
+// ===== TypeScript =====
+["TypeScript","Базовые типы","junior",[`примитивы, массивы, кортежи, enum`,`unknown vs any vs never`,`void, литеральные типы`],[`Почему unknown безопаснее any и к чему он принуждает?`,`Когда тип never возникает сам (exhaustive check, упавшая функция)?`,`Чем кортеж отличается от массива и где он нужен?`,`Почему enum часто советуют заменить на union литералов?`,`Каким окажется тип переменной без аннотации и когда он слишком широкий?`]],
+["TypeScript","Интерфейсы vs type","junior+",[`interface (объекты, merging) vs type (любой тип)`,`extends`,`почти взаимозаменяемы на объектах`],[`Когда declaration merging у interface — плюс, а когда мина?`,`Что выразимо через type, но невозможно через interface?`,`Почему для публичного API библиотеки часто берут interface?`,`Чем extends у interface отличается от пересечения & у type?`,`Влияет ли выбор на скорость компилятора?`]],
+["TypeScript","Union и discriminated unions","middle",[`A | B, A & B`,`метка kind + switch`,`исчерпывающность через never`],[`Как поле-дискриминатор позволяет TS сузить тип в ветке?`,`Как заставить компилятор ругаться, если забыл новый вариант (never)?`,`Чем «голый» union без дискриминатора неудобен?`,`Как типобезопасно смоделировать idle/loading/success/error?`,`Что произойдёт при пересечении двух несовместимых типов (& → never)?`]],
+["TypeScript","Generics","middle",[`дженерики <T> функций/типов/компонентов`,`ограничения <T extends X>, дефолты`,`инференс параметров`],[`Приведи случай, где без extends-ограничения дженерик не написать.`,`Как TS выводит тип дженерика из аргументов?`,`Чем дженерик-функция лучше набора перегрузок?`,`Как типизировать дженерик-компонент списка в React?`,`Когда полезен дефолтный тип-параметр?`]],
+["TypeScript","Utility types","middle",[`Partial/Required/Pick/Omit/Record/Readonly`,`Exclude/Extract/ReturnType/Parameters/Awaited`,`комбинирование`],[`Как из Pick и Partial собрать тип «частичного обновления сущности»?`,`Как типизировать словарь через Record и в чём риск?`,`Где нужны ReturnType и Parameters?`,`Как Awaited разворачивает вложенные промисы?`,`Как собрать свой utility-тип из mapped + conditional?`]],
+["TypeScript","Type guards и сужение","middle",[`typeof / instanceof / in / null-check`,`кастомный guard: x is T`,`assertion functions: asserts x is T`],[`Чем кастомный guard (x is T) отличается для TS от обычной проверки?`,`Что такое assertion function (asserts x is T) и когда она нужна?`,`Как in, typeof и instanceof по-разному сужают тип?`,`Почему при strictNullChecks проверка на null обязательна?`,`Как безопасно сузить unknown до конкретного типа?`]],
+["TypeScript","Mapped types","middle+",[`{ [K in keyof T]: ... }`,`модификаторы ?/readonly (+/-)`,`переиспользование форм типов`],[`Как сделать все поля типа optional или readonly?`,`Что делают модификаторы -readonly и -?`,`Как переименовать ключи через as внутри mapped type?`,`Зачем keyof внутри mapped type?`,`Как из типа сделать тип геттеров (getName, getAge)?`]],
+["TypeScript","Conditional types и infer","middle+",[`T extends U ? X : Y`,`infer для извлечения`,`распределение по union`],[`Что делает infer и как извлечь тип элемента массива?`,`Как conditional type распределяется по union?`,`Зачем оборачивать в [T] extends [U] (отключить дистрибутивность)?`,`Как написать тип, разворачивающий вложенные промисы?`,`Где conditional types используются в стандартных utility-типах?`]],
+["TypeScript","keyof / typeof / indexed access","middle",[`keyof T — union ключей`,`T[K] — тип значения по ключу`,`typeof value`],[`Что вернёт keyof для типа с индексной сигнатурой?`,`Как typeof в типах превращает значение в тип?`,`Как T[keyof T] даёт union всех значений?`,`Зачем indexed access вместо дублирования типов?`,`Как достать тип одного поля вложенного объекта?`]],
+["TypeScript","Template literal types","middle+",[`шаблонные строковые типы вида A-B`,`комбинация с union`,`типобезопасные имена событий/ключей`],[`Как сгенерировать union строк вида on + Capitalize<Event>?`,`Зачем шаблонные типы для типобезопасных имён событий/роутов?`,`Как они дают комбинаторный взрыв при union?`,`Как извлечь часть строки типом (infer в шаблоне)?`,`Где они окупаются, а где усложняют без пользы?`]],
+["TypeScript","Типизация в React","junior+",[`props, children: ReactNode`,`события: ChangeEvent / MouseEvent`,`useState<T>, useRef<T>`],[`Почему children обычно ReactNode, а не JSX.Element?`,`Как типизировать обработчик onChange у input?`,`Чем спорна типизация компонента через FC?`,`Как типизировать пропсы дженерик-компонента (например, списка)?`,`Как типизировать ref на конкретный DOM-элемент?`]],
+["TypeScript","as const","middle",[`литералы read-only и узкие`,`кортежи вместо массивов`,`для констант и конфигов`],[`Что as const делает с массивом и объектом?`,`Как as const помогает вывести union из массива строк?`,`Почему без as const тип будет string, а не литерал?`,`Чем as const отличается от enum для констант?`,`Как as const применяют к объекту конфигурации?`]],
+["TypeScript","satisfies","middle",[`проверка соответствия без расширения типа`,`сохраняет узкий инференс`,`vs аннотация : Type`],[`Какую проблему решает satisfies, которую не решает : Type?`,`Как satisfies одновременно проверяет и сохраняет узкий вывод?`,`Приведи пример палитры цветов, где satisfies лучше : Record?`,`Чем satisfies отличается от as?`,`Когда satisfies не нужен?`]],
+["TypeScript","tsconfig (strict)","middle",[`strict — набор строгих проверок`,`noImplicitAny, strictNullChecks`,`target / module / paths`],[`Что конкретно включает strict (назови ключевые флаги)?`,`Почему strictNullChecks меняет стиль написания кода?`,`Что даёт noUncheckedIndexedAccess для доступа по индексу?`,`Зачем paths и как они дружат с бандлером?`,`Почему включать strict на старом проекте больно и как мигрировать?`]],
+// ===== React =====
+["React","JSX и createElement","junior",[`JSX превращается в React.createElement(type, props, children)`,`выражения в фигурных скобках`,`один корень или Fragment`],[`Во что компилируется JSX и почему это «просто функции»?`,`Почему нельзя вернуть два соседних элемента без обёртки?`,`Что произойдёт, если в JSX вставить объект как children?`,`Чем условие через && опасно с числом 0?`,`Почему имя компонента должно быть с большой буквы?`]],
+["React","key и реконсиляция","junior",[`key помогает сопоставлять элементы списка`,`стабильный id, не индекс`,`что ломается при индексе`],[`Что конкретно сломается, если использовать индекс как key в изменяемом списке?`,`Зачем React нужен key и как он влияет на сохранение состояния?`,`Что произойдёт со state инпутов при перестановке элементов с key=index?`,`Можно ли использовать Math.random() как key и почему это плохо?`,`Как key помогает «сбросить» компонент?`]],
+["React","Компоненты и композиция","junior",[`функциональные — стандарт`,`children, композиция компонентов`,`composition over inheritance`],[`Как через children избежать prop drilling (передача слотами)?`,`Почему в React почти не используют наследование компонентов?`,`Чем композиция гибче пропса-флага вроде isModal?`,`Как сделать переиспользуемую обёртку Card со слотами?`,`Когда выносить часть UI в отдельный компонент, а когда нет?`]],
+["React","useState","junior",[`иммутабельный апдейт`,`функциональная форма setX(prev => ...)`,`ленивая инициализация, батчинг`],[`Почему два подряд setCount(count+1) не дадут +2 и как починить?`,`Когда обязательна функциональная форма setState?`,`Что делает ленивая инициализация и когда она важна?`,`Почему обновления батчатся и что изменилось в React 18?`,`Что произойдёт, если положить в state объект и мутировать его?`]],
+["React","useEffect","junior+",[`выполняется после рендера`,`массив зависимостей`,`cleanup при размонтировании/перед повтором`],[`Когда именно вызывается cleanup и зачем он перед каждым повтором?`,`Почему пустой массив deps — не всегда «только при маунте»?`,`Как пропущенная зависимость приводит к устаревшему замыканию?`,`Почему fetch прямо в useEffect часто создаёт гонку и как её убить?`,`Чем эффект отличается от обработчика события по назначению?`]],
+["React","useRef","junior+",[`.current без ре-рендера`,`доступ к DOM-узлу`,`хранение таймеров/предыдущих значений`],[`Почему изменение ref не вызывает ре-рендер и когда это плюс?`,`Как через ref сохранить предыдущее значение пропса?`,`Когда стоит хранить значение в ref, а не в state?`,`Почему нельзя читать ref.current во время рендера?`,`Как ref помогает хранить id таймера между рендерами?`]],
+["React","useMemo и useCallback","middle",[`мемоизация значения/функции по deps`,`для дорогих вычислений и стабильных ссылок`,`не оборачивать всё подряд`],[`Когда useMemo реально нужен, а когда это карго-культ?`,`Зачем useCallback, если передаёшь функцию в memo-компонент?`,`Почему useMemo не гарантия — React может «забыть» кэш?`,`Что дороже: лишний useMemo или лишнее вычисление?`,`Как стабильная ссылка функции влияет на deps useEffect?`]],
+["React","useContext","middle",[`убирает prop drilling`,`ре-рендер всех потребителей при смене value`,`дробить контексты, мемоизировать value`],[`Почему все потребители ре-рендерятся при смене value и как это смягчить?`,`Почему новый объект {a,b} в value контекста — частый баг?`,`Когда контекст не подходит и нужен стейт-менеджер?`,`Как разбить один большой контекст и зачем?`,`Чем контекст отличается от глобальной переменной?`]],
+["React","useReducer","middle",[`сложное/связанное состояние`,`(state, action) => state`,`vs useState`],[`Когда useReducer объективно лучше нескольких useState?`,`Чем reducer удобнее для связанных переходов состояния?`,`Как связка useReducer + context даёт мини-Redux?`,`Почему reducer должен быть чистой функцией?`,`Как тестировать логику reducer без рендера?`]],
+["React","useLayoutEffect vs useEffect","middle+",[`layout — синхронно до paint (измерения)`,`effect — асинхронно после paint`,`по умолчанию useEffect`],[`В чём разница по таймингу и что увидит пользователь?`,`Когда без useLayoutEffect будет видимое мерцание?`,`Почему useLayoutEffect предупреждает при SSR?`,`Как измерить размер элемента до отрисовки?`,`Почему по умолчанию надо брать useEffect?`]],
+["React","Кастомные хуки и правила хуков","junior+",[`use* — переиспользование логики`,`только на верхнем уровне`,`только из хуков/компонентов`],[`Почему хук нельзя вызывать в условии или цикле?`,`Как React связывает вызовы хуков с компонентом (по порядку)?`,`Что общего и разного у кастомного хука и обычной функции?`,`Делятся ли два компонента состоянием одного кастомного хука?`,`Как вынести логику формы в кастомный хук?`]],
+["React","Virtual DOM и diffing","middle",[`виртуальное дерево в памяти`,`сравнение по типу и key`,`минимум изменений в реальном DOM`],[`Зачем нужен Virtual DOM — он же не быстрее прямого DOM?`,`Как React решает, перерисовать или переиспользовать узел?`,`Почему смена типа узла уничтожает поддерево?`,`Как key вписывается в алгоритм согласования?`,`Правда ли, что Virtual DOM всегда быстрее — когда нет?`]],
+["React","Причины ре-рендера и React.memo","middle",[`state / props / context / ре-рендер родителя`,`React.memo — по props`,`когда мемоизировать компонент`],[`Назови все причины, по которым компонент ре-рендерится.`,`Почему React.memo не помог, хотя пропсы «те же»?`,`Ре-рендер ребёнка обязательно ли перерисовывает DOM?`,`Когда memo вредит больше, чем помогает?`,`Как новый инлайн-объект в пропсах ломает memo?`]],
+["React","Controlled vs uncontrolled","junior+",[`controlled: value + onChange`,`uncontrolled: ref / defaultValue`,`когда что удобнее`],[`Чем controlled-инпут платит за «единый источник истины»?`,`Когда uncontrolled объективно лучше (большие формы, файлы)?`,`Что произойдёт, если задать value без onChange?`,`Как defaultValue отличается от value по поведению?`,`Почему файловый input всегда uncontrolled?`]],
+["React","Lifting state up и prop drilling","junior+",[`общее состояние — в общий предок`,`prop drilling`,`лечение: context / composition / store`],[`Когда поднятие состояния создаёт лишние ре-рендеры и как это лечить?`,`Чем композиция (children) часто лучше context против prop drilling?`,`Где грань между «поднять» и «вынести в стор»?`,`Почему prop drilling сам по себе — не всегда зло?`,`Как сильно поднятое состояние бьёт по производительности?`]],
+["React","Условный рендеринг, списки, Fragment","junior",[`&& и тернарник`,`списки через map + key`,`Fragment без лишнего узла`],[`Почему {count && <X/>} отрендерит 0 на экране?`,`Зачем Fragment и чем <> отличается от <div>?`,`Что будет, если в map забыть key?`,`Как условно вернуть null и что это значит для эффектов?`,`Чем тернарник в JSX иногда хуже раннего return?`]],
+["React","Порталы (createPortal)","middle",[`рендер вне DOM-иерархии родителя`,`модалки, тултипы, тосты`,`события всплывают по React-дереву`],[`Зачем портал, если можно просто position: fixed?`,`Куда всплывёт клик из портала — по DOM или по React-дереву?`,`Как портал решает проблему overflow:hidden у родителя?`,`Как закрыть модалку по клику вне неё с порталом?`,`Влияет ли портал на контекст внутри него?`]],
+["React","Error boundaries","middle",[`getDerivedStateFromError / componentDidCatch`,`фоллбэк UI при ошибке рендера`,`не ловит события, async, SSR`],[`Какие ошибки error boundary не поймает и как их ловить?`,`Почему их до сих пор делают классом, а не хуком?`,`Где разместить границу: вокруг всего или точечно?`,`Как сбросить boundary, чтобы пользователь мог повторить?`,`Чем boundary отличается от try/catch в обработчике?`]],
+["React","Suspense и React.lazy","middle",[`lazy(() => import()) + Suspense fallback`,`code splitting по роутам/компонентам`,`Suspense для данных (концепт)`],[`Что покажет Suspense и что произойдёт при ошибке загрузки чанка?`,`Как разбить бандл по роутам через lazy?`,`Чем Suspense для данных отличается от лоадера через useEffect?`,`Почему fallback мелькает и как этого избежать?`,`Можно ли вкладывать Suspense и зачем?`]],
+["React","useTransition","middle+",[`пометить апдейт неприоритетным`,`isPending для индикатора`,`не блокирует ввод`],[`Какую проблему решает useTransition при тяжёлом списке?`,`Чем «срочное» обновление отличается от «переходного»?`,`Как isPending помогает UX и чем отличается от спиннера?`,`Почему ввод в поле остаётся плавным с useTransition?`,`Когда useTransition не нужен?`]],
+["React","useDeferredValue","middle+",[`отложенное значение`,`для тяжёлого списка/поиска`,`плавность при наборе`],[`Чем useDeferredValue отличается от debounce по сути?`,`Какую проблему он решает при фильтрации списка?`,`Что вернёт хук, пока «догоняет» актуальное значение?`,`Когда выбрать useDeferredValue, а когда useTransition?`,`Почему он не «тормозит» сам ввод?`]],
+["React","forwardRef и useImperativeHandle","middle",[`проброс ref в дочерний компонент`,`открыть наружу методы (focus и т.п.)`,`в React 19 ref — обычный проп`],[`Зачем useImperativeHandle, если можно пробросить ref напрямую?`,`Когда императивный API оправдан в декларативном React?`,`Что изменилось с ref в React 19 и зачем forwardRef раньше?`,`Как открыть наружу только focus(), скрыв остальное?`,`Почему злоупотребление ref — запах архитектуры?`]],
+["React","ref как пропс (React 19)","junior+",[`ref передаётся как обычный проп`,`forwardRef больше не обязателен`,`миграция со старого кода`],[`Что именно упростил React 19 в работе с ref?`,`Как теперь передать ref в свой компонент без forwardRef?`,`Совместим ли старый forwardRef-код с React 19?`,`Почему раньше ref не был обычным пропсом?`,`Как мигрировать библиотеку компонентов на новый стиль?`]],
+["React","Хук use() (React 19)","middle+",[`читает промис или контекст`,`можно вызывать условно`,`работает в паре с Suspense`],[`Чем use() нарушает привычные правила хуков и почему это ок?`,`Как use() читает промис и кто его «подвешивает» (Suspense)?`,`Можно ли вызывать use() в условии, в отличие от useState?`,`Чем use(Context) отличается от useContext?`,`Где use() уместен, а где нет?`]],
+["React","Actions и useActionState (React 19)","middle+",[`async-переходы для форм (Actions)`,`useActionState: state + error + pending`,`useFormStatus`],[`Что такое Action и как он связан с pending-состоянием формы?`,`Что именно возвращает useActionState?`,`Как useFormStatus узнаёт о статусе родительской формы?`,`Чем это лучше ручного useState(isLoading)?`,`Как Actions поддерживают прогрессивное улучшение?`]],
+["React","useOptimistic (React 19)","middle+",[`оптимистичный UI до ответа сервера`,`мгновенное отображение изменения`,`откат при ошибке`],[`Что такое оптимистичный UI и где он улучшает ощущение скорости?`,`Что произойдёт с оптимистичным значением при ошибке сервера?`,`Чем useOptimistic отличается от обычного setState заранее?`,`Какие риски рассинхрона с сервером он несёт?`,`Приведи кейс лайка/комментария с useOptimistic.`]],
+["React","Антипаттерны React","middle",[`мутация state`,`индекс как key в изменяемых списках`,`лишние эффекты, дублирование производного`],[`Почему «синхронизировать пропс в state эффектом» — антипаттерн?`,`Что не так с хранением производного значения в отдельном state?`,`Почему мутация state иногда «работает», но это бомба?`,`Когда useEffect лишний и логике место в обработчике/рендере?`,`Чем опасен setState внутри рендера?`]],
+["React","Производительность и Profiler","middle+",[`Profiler — почему компонент ре-рендерится`,`точечная мемоизация`,`code splitting`],[`Как через Profiler найти, кто виноват в лишних ре-рендерах?`,`С чего начать оптимизацию — с мемоизации или с измерения?`,`Почему «обернуть всё в memo» — плохая стратегия?`,`Как поднятие состояния вниз (colocation) убирает ре-рендеры?`,`Когда проблема не в React, а в тяжёлом вычислении/верстке?`]],
+["React","Виртуализация списков","middle+",[`рендерим только видимое`,`react-window / virtuoso`,`для очень длинных списков`],[`Почему длинный список тормозит и как виртуализация это чинит?`,`Какие проблемы создаёт виртуализация (доступность, Ctrl+F, высоты)?`,`Чем фиксированная высота строки проще динамической?`,`Как виртуализация дружит с бесконечным скроллом?`,`Когда виртуализация — преждевременная оптимизация?`]],
+["React","React Hook Form","middle",[`uncontrolled + ref → меньше ре-рендеров`,`валидация: resolver + zod/yup`,`vs ручные формы`],[`Почему RHF делает меньше ре-рендеров, чем controlled-форма?`,`Как подключить схему zod через resolver?`,`Чем register отличается от Controller?`,`Когда ручная форма всё же проще RHF?`,`Как RHF справляется с большими формами по производительности?`]],
+["React","HOC (Higher-Order Component)","middle",[`функция: компонент → компонент`,`добавляет поведение/пропсы`,`современная замена — хуки`],[`Какие проблемы HOC решал и почему их вытеснили хуки?`,`Что такое «props collision» и «wrapper hell» у HOC?`,`Как HOC мешает прокидыванию ref и как это чинили?`,`Когда HOC всё ещё уместен сегодня?`,`Чем HOC отличается от render props по композиции?`]],
+["React","Render props","middle",[`проп-функция рендерит UI`,`разделяет логику и отображение`,`vs кастомные хуки`],[`Как render prop разделяет логику и представление?`,`Чем render props хуже кастомного хука сегодня?`,`Что такое «callback hell» в JSX из-за render props?`,`Где паттерн всё ещё удобен (например, библиотеки)?`,`Чем children-as-function отличается от обычного пропса?`]],
+["React","Compound components","middle+",[`связанные компоненты через контекст (Tabs/Tab)`,`гибкий декларативный API`,`общее неявное состояние`],[`Как Tabs и Tab делят состояние неявно через контекст?`,`Чем такой API гибче, чем один компонент с кучей пропсов?`,`Какие минусы у неявной связи компонентов?`,`Как это связано с паттерном «слотов»?`,`Когда compound components — оверинжиниринг?`]],
+// ===== Роутинг =====
+["Роутинг","Маршруты и вложенность","junior+",[`Routes / Route, Outlet`,`индексные и layout-роуты`,`структура навигации SPA`],[`Зачем нужен Outlet и как он рендерит вложенные роуты?`,`Чем layout-роут отличается от обычного и зачем он?`,`Что такое индексный роут и когда он срабатывает?`,`Как организовать общий каркас (шапку) для группы страниц?`,`Чем клиентская маршрутизация отличается от серверной?`]],
+["Роутинг","Динамические параметры (useParams)","junior+",[`:id в пути`,`useParams()`,`типизация параметров`],[`Как достать :id из URL и какого он типа?`,`Что произойдёт при смене :id — компонент перемонтируется или нет?`,`Как сбросить состояние при смене параметра роута?`,`Чем path-параметр отличается от query-параметра по смыслу?`,`Как типизировать useParams в TypeScript?`]],
+["Роутинг","Навигация (useNavigate, Link)","junior+",[`Link / NavLink`,`useNavigate (программно)`,`активный класс у NavLink`],[`Почему Link лучше обычного a для SPA?`,`Когда нужен useNavigate вместо Link?`,`Как сделать редирект после успешного логина?`,`Что делает replace: true и когда он важен (история)?`,`Как NavLink определяет активную ссылку?`]],
+["Роутинг","Query-параметры (useSearchParams)","junior+",[`чтение/запись query-строки`,`useSearchParams()`,`синхронизация фильтров с URL`],[`Зачем хранить состояние фильтров в URL, а не в state?`,`Как useSearchParams связан с историей браузера?`,`Чем query-параметры лучше для шаринга ссылки?`,`Как не потерять остальные параметры при обновлении одного?`,`Какие данные не стоит класть в URL?`]],
+["Роутинг","Защищённые роуты и редиректы","middle",[`guard-обёртка вокруг роута`,`Navigate для редиректа`,`редирект после авторизации`],[`Как реализовать приватный роут и куда редиректить неавторизованного?`,`Как после логина вернуть пользователя на исходную страницу?`,`Почему проверка только на клиенте небезопасна?`,`Как избежать «мигания» защищённой страницы до проверки auth?`,`Чем декларативный Navigate отличается от императивного navigate?`]],
+["Роутинг","Ленивые роуты","middle",[`lazy(() => import()) + Suspense`,`code splitting по страницам`,`fallback на время загрузки`],[`Как разбить приложение на чанки по роутам?`,`Зачем оборачивать ленивый роут в Suspense?`,`Что показать в fallback, чтобы не было «дёрганья»?`,`Как предзагрузить чанк до перехода (prefetch)?`,`Что произойдёт при ошибке загрузки чанка и как это обработать?`]],
+["Роутинг","Loaders и actions","middle",[`loader — данные до рендера`,`action — мутации форм`,`useLoaderData, errorElement`],[`Чем loader лучше загрузки данных в useEffect?`,`Когда срабатывает action и как он связан с формой?`,`Как loader решает проблему «водопада» запросов?`,`Что показывает errorElement и чем удобен?`,`Как loader дружит с кэшированием и ревалидацией?`]],
+// ===== State =====
+["State","Локальное vs глобальное","junior+",[`начинать с локального useState`,`поднимать по необходимости`,`глобальное — для сквозного (auth, тема)`],[`По каким признакам решаешь — локальное или глобальное?`,`Что НЕ стоит класть в глобальное состояние и почему?`,`Чем «поднять состояние» отличается от «вынести в стор»?`,`Почему преждевременная глобализация состояния вредна?`,`Где живёт состояние формы — локально или глобально?`]],
+["State","Context API и ре-рендеры","middle",[`для редко меняющегося сквозного`,`ре-рендер всех потребителей`,`не замена стейт-менеджеру`],[`Почему context — не стейт-менеджер и где его потолок?`,`Как уменьшить ре-рендеры потребителей контекста?`,`Почему новый объект в value контекста — частый баг?`,`Когда разбить один контекст на несколько?`,`Чем context хуже стора при частых обновлениях?`]],
+["State","Redux Toolkit","middle",[`slices, reducers, actions`,`immer внутри (можно «мутировать»)`,`configureStore`],[`Зачем нужен immer и почему в RTK можно «мутировать»?`,`Что такое slice и как он уменьшает бойлерплейт Redux?`,`Когда Redux оправдан, а когда это оверкилл?`,`Чем createAsyncThunk отличается от RTK Query?`,`Почему reducer обязан быть чистым?`]],
+["State","RTK Query","middle",[`запросы, кэш, инвалидация`,`автогенерация хуков`,`инвалидация по тегам`],[`Как RTK Query избавляет от ручного loading/error?`,`Что такое инвалидация по тегам и зачем она?`,`Как дедупликация запросов экономит сеть?`,`Чем RTK Query отличается от TanStack Query?`,`Когда хватит RTK Query вместо ручных thunks?`]],
+["State","Zustand","middle",[`минималистичный стор-хук`,`селекторы для точечной подписки`,`без бойлерплейта`],[`Чем Zustand проще Redux по объёму кода?`,`Зачем селекторы и как они уменьшают ре-рендеры?`,`Как избежать ре-рендера при подписке на весь стор?`,`Чем Zustand отличается от context по производительности?`,`Где Zustand уступает Redux Toolkit?`]],
+["State","Jotai (атомарный стейт)","middle",[`состояние из независимых атомов`,`точечная подписка на атом`,`деривация атомов`],[`Что такое атом и чем атомарный подход отличается от единого стора?`,`Как деривация атомов заменяет селекторы?`,`Почему точечная подписка снижает ре-рендеры?`,`Чем Jotai ближе к useState, чем к Redux?`,`Когда атомарный подход создаёт хаос из атомов?`]],
+["State","MobX (реактивный стейт)","middle+",[`observable + автоматическое отслеживание`,`реакции на изменения`,`мутабельный подход`],[`Как MobX автоматически отслеживает, что читает компонент?`,`Чем мутабельный подход MobX отличается от иммутабельного Redux?`,`Что такое реакция и когда она запускается?`,`Какие подвохи у «магии» автоотслеживания?`,`Когда MobX удобнее, а когда его непредсказуемость мешает?`]],
+["State","Server state (TanStack Query)","middle",[`кэш, ревалидация, дедупликация`,`статусы loading/error, мутации`,`снимает ручной fetch + useState`],[`Почему серверные данные — это отдельный вид состояния?`,`Что такое stale-while-revalidate и чем он удобен?`,`Как инвалидация кэша держит данные свежими?`,`Чем оптимистичная мутация в Query улучшает UX?`,`Какие проблемы ручного fetch + useState он закрывает?`]],
+["State","Client vs server state","middle",[`server: async/общий/кэш → Query`,`client: UI-стейт → useState/стор`,`разные инструменты`],[`По каким признакам отличить серверное состояние от клиентского?`,`Почему хранить серверные данные в Redux часто ошибка?`,`Чем кэш серверного состояния отличается от обычного стора?`,`Где грань, когда серверные данные становятся клиентскими?`,`Какой инструмент для каждого вида и почему?`]],
+["State","Нормализация данных","middle+",[`сущности по id вместо вложенных массивов`,`убирает дубли, упрощает апдейт`,`createEntityAdapter`],[`Какую проблему создают вложенные массивы дублей?`,`Как нормализация упрощает обновление одной сущности?`,`Что делает createEntityAdapter?`,`Чем нормализованный стор похож на таблицы БД?`,`Когда нормализация — лишняя сложность?`]],
+["State","Селекторы и reselect","middle+",[`производное — вычислять, не хранить`,`мемоизация селектора (reselect)`,`меньше лишних ре-рендеров`],[`Почему производное состояние лучше вычислять, а не хранить?`,`Зачем мемоизировать селектор и что он кэширует?`,`Как нестабильная ссылка из селектора вызывает ре-рендеры?`,`Чем createSelector помогает при дорогой выборке?`,`Когда селектор пересчитывается, несмотря на мемоизацию?`]],
+["State","Машины состояний (XState)","middle+",[`конечный автомат: состояния и переходы`,`невозможные состояния становятся непредставимыми`,`для сложных флоу (визард, плеер, форма)`],[`Какую проблему «невозможных состояний» решает конечный автомат?`,`Чем явные переходы лучше набора булевых флагов?`,`Где машина состояний оправдана, а где избыточна?`,`Как автомат помогает визуализировать и тестировать логику?`,`Приведи пример флоу, который без машины превращается в кашу из if?`]],
+// ===== Браузер =====
+["Браузер","Как браузер рендерит страницу","middle",[`DOM, CSSOM → render tree`,`layout → paint → composite`,`слои и композиция`],[`Назови этапы от HTML до пикселей по порядку.`,`Почему CSS считается блокирующим рендеринг?`,`Что происходит на этапе composite и при чём слои?`,`Как один тяжёлый скрипт задерживает первый рендер?`,`Чем layout отличается от paint по стоимости?`]],
+["Браузер","Reflow vs repaint","middle",[`reflow (геометрия) — дорого`,`repaint — без смены раскладки`,`минимизация: transform вместо top/left`],[`Что именно дороже в reflow и почему?`,`Как чтение offsetHeight в цикле вызывает layout thrashing?`,`Как сгруппировать чтения и записи DOM, чтобы избежать дёрганья?`,`Почему transform не вызывает reflow?`,`Какие свойства провоцируют только repaint?`]],
+["Браузер","Critical rendering path","middle",[`CSS блокирует рендер, JS — парсинг`,`defer vs async`,`что ускоряет первый рендер`],[`Что блокирует первый рендер и как это ускорить?`,`Чем defer отличается от async по порядку и таймингу?`,`Почему скрипт в head без defer тормозит парсинг?`,`Как critical CSS сокращает время до первого рендера?`,`Где разместить скрипты, чтобы не блокировать контент?`]],
+["Браузер","DOM API","junior+",[`querySelector, создание/вставка/удаление узлов`,`classList, dataset`,`textContent vs innerHTML`],[`Чем textContent безопаснее innerHTML?`,`Почему частые вставки в DOM по одной — это медленно (и про DocumentFragment)?`,`Чем dataset удобнее произвольных атрибутов?`,`Как живые HTMLCollection отличаются от статичного NodeList?`,`Почему манипуляция DOM в цикле бьёт по перформансу?`]],
+["Браузер","Делегирование событий","junior+",[`фазы: capture, target, bubble`,`делегирование на родителя`,`preventDefault / stopPropagation`],[`Как делегирование экономит обработчики на большом списке?`,`Чем capture-фаза отличается от bubble и когда нужна?`,`В чём разница preventDefault и stopPropagation?`,`Почему один обработчик на родителе ловит клики по новым детям?`,`Какие события не всплывают и как с ними быть?`]],
+["Браузер","localStorage и sessionStorage","junior+",[`строки, ~5МБ, синхронно`,`session — только на вкладку`,`сериализация через JSON`],[`Почему запись в localStorage может подвесить UI (синхронность)?`,`Чем sessionStorage отличается по времени жизни?`,`Как ловить изменения localStorage в другой вкладке (storage event)?`,`Почему хранить токены тут спорно с точки зрения XSS?`,`Что произойдёт при превышении лимита квоты?`]],
+["Браузер","Cookies (httpOnly, SameSite)","middle",[`уходят на сервер с каждым запросом`,`httpOnly — недоступна JS`,`SameSite, Secure`],[`Зачем httpOnly, если cookie и так «секретная»?`,`Как SameSite защищает от CSRF и какие у него режимы?`,`Чем cookie отличается от localStorage по доставке на сервер?`,`Почему лишние cookie замедляют каждый запрос?`,`Что делает флаг Secure и когда без него никак?`]],
+["Браузер","IndexedDB","middle",[`большие структурированные данные`,`асинхронно, транзакции`,`офлайн-хранилище`],[`Когда IndexedDB оправдан вместо localStorage?`,`Почему его асинхронность и транзакции — плюс для UI?`,`Какие данные тут хранят (офлайн, кэш, очереди)?`,`Почему «сырой» API неудобен и чем помогают обёртки?`,`Как версионирование схемы IndexedDB работает?`]],
+["Браузер","IntersectionObserver","junior+",[`отслеживает видимость элемента`,`ленивая загрузка, бесконечный скролл`,`вместо scroll-листенеров`],[`Почему IntersectionObserver лучше слушателя scroll?`,`Как сделать ленивую загрузку картинок через него?`,`Что задаёт rootMargin и threshold?`,`Как реализовать бесконечный скролл наблюдателем?`,`Чем он экономит производительность против onScroll?`]],
+["Браузер","ResizeObserver","middle",[`отслеживает изменение размера элемента`,`адаптивные компоненты`,`вместо window.resize + чтения layout`],[`Чем ResizeObserver лучше слушателя window.resize?`,`Зачем он для компонента, не зависящего от вьюпорта?`,`Как избежать бесконечного цикла наблюдения при изменении размера?`,`Где он нужен для контейнерно-адаптивных UI?`,`Чем отличается от container queries по задаче?`]],
+["Браузер","MutationObserver","middle",[`отслеживает изменения DOM`,`добавление/удаление узлов и атрибутов`,`реакция на сторонние изменения`],[`Когда нужен MutationObserver (сторонние скрипты, виджеты)?`,`Что можно отслеживать: узлы, атрибуты, текст?`,`Чем он лучше периодического опроса DOM?`,`Какие риски производительности при широком наблюдении?`,`Как избежать рекурсии при изменении DOM из колбэка?`]],
+["Браузер","requestAnimationFrame","middle",[`колбэк перед кадром (~60fps)`,`плавные анимации`,`vs setTimeout`],[`Почему rAF плавнее setTimeout для анимаций?`,`Когда вызывается колбэк rAF относительно отрисовки?`,`Как rAF экономит ресурсы на фоновой вкладке?`,`Как сделать анимацию, независимую от частоты кадров (delta time)?`,`Почему верстку лучше менять внутри rAF?`]],
+["Браузер","History API (SPA-навигация)","middle",[`pushState / replaceState`,`событие popstate`,`основа клиентского роутинга`],[`Как pushState меняет URL без перезагрузки?`,`Чем pushState отличается от replaceState для истории?`,`Что ловит popstate и когда он срабатывает?`,`Почему по pushState не стреляет popstate?`,`Как это всё лежит в основе React Router?`]],
+["Браузер","Web Workers","junior+",[`фоновый поток`,`общение через postMessage`,`нет доступа к DOM`],[`Какую проблему главного потока решает Web Worker?`,`Почему у воркера нет доступа к DOM?`,`Что можно и нельзя передать через postMessage (structured clone)?`,`Что такое Transferable и зачем (ArrayBuffer)?`,`Когда выносить вычисления в воркер оправдано?`]],
+["Браузер","Service Workers и офлайн-кэш","senior",[`прокси сетевых запросов`,`Cache Storage`,`стратегии cache-first / network-first`],[`Как Service Worker перехватывает запросы и зачем?`,`Чем cache-first отличается от network-first по UX?`,`Какие подвохи у обновления Service Worker (skipWaiting)?`,`Почему «застрявший» SW отдаёт старую версию приложения?`,`Чем Cache Storage отличается от HTTP-кэша?`]],
+["Браузер","PWA (manifest, установка)","middle+",[`манифест: иконки, имя, тема`,`установка на устройство`,`критерии устанавливаемого PWA`],[`Что должно быть, чтобы PWA можно было установить?`,`За что отвечает manifest.json?`,`Чем PWA отличается от обычного сайта для пользователя?`,`Какие ограничения у PWA против нативного приложения?`,`Зачем PWA нужен Service Worker?`]],
+["Браузер","File API и Drag-and-Drop","middle",[`input type=file, FileReader`,`drag-and-drop события (dragover/drop)`,`Blob, URL.createObjectURL`],[`Как прочитать содержимое выбранного файла в браузере?`,`Зачем нужен URL.createObjectURL и почему его надо revoke?`,`Как реализовать перетаскивание файлов в зону загрузки?`,`Почему dragover нужно с preventDefault для drop?`,`Чем Blob отличается от File?`]],
+["Браузер","Canvas vs SVG","middle",[`Canvas — растровый, императивный`,`SVG — векторный, в DOM`,`выбор по числу элементов и интерактивности`],[`Когда Canvas лучше SVG и наоборот?`,`Почему 10000 SVG-элементов тормозят, а Canvas — нет?`,`Как сделать элементы Canvas доступными/интерактивными?`,`Почему SVG масштабируется без потери качества?`,`Где уместен WebGL вместо Canvas 2D?`]],
+// ===== DevTools =====
+["DevTools","Elements / инспектор","intern",[`инспект и правка DOM вживую`,`редактирование стилей, состояния :hov/:focus`,`computed, box model`],[`Как посмотреть, какое правило реально применилось и почему?`,`Как эмулировать :hover/:focus, который иначе не поймать?`,`Зачем вкладка Computed и чем отличается от Styles?`,`Как найти, кто задаёт неожиданный отступ (box model)?`,`Как временно отключить правило, не трогая код?`]],
+["DevTools","Console","junior",[`log/warn/error, table/group`,`$0 (выбранный узел), $$('sel')`,`copy(), monitorEvents`],[`Что такое $0 и как им быстро дебажить выбранный элемент?`,`Как console.table делает вывод массива объектов читаемым?`,`Зачем copy() и как достать значение в буфер?`,`Чем monitorEvents помогает понять, что слушает элемент?`,`Как console.log по ссылке вводит в заблуждение (ленивый вывод объекта)?`]],
+["DevTools","Network","junior+",[`waterfall, тайминги, статусы`,`headers / payload / response / preview`,`throttling, disable cache, filter`],[`Как по waterfall найти «водопад» последовательных запросов?`,`Где увидеть, почему запрос медленный (TTFB, очередь)?`,`Как сэмулировать медленную сеть и зачем?`,`Как поймать, что ответ берётся из кэша, а не с сервера?`,`Где смотреть тело и заголовки запроса при отладке API?`]],
+["DevTools","Sources / отладчик","middle",[`breakpoints, conditional, logpoint`,`step over/into/out, watch, call stack`,`blackbox скриптов`],[`Чем conditional breakpoint удобнее, чем десяток console.log?`,`Что такое logpoint и почему он лучше временного log?`,`Как call stack помогает понять, кто вызвал функцию?`,`Зачем blackbox-ить скрипты библиотек при отладке?`,`Чем step into отличается от step over?`]],
+["DevTools","Performance","middle+",[`запись профиля, flame chart`,`long tasks, FPS, layout shifts`,`поиск reflow и тяжёлых функций`],[`Как найти long task, блокирующий главный поток?`,`Как читать flame chart, чтобы найти узкое место?`,`Как поймать причину дёрганья (jank) при скролле?`,`Где увидеть лишние layout shifts (CLS)?`,`Как отличить тормоза в JS от тормозов в верстке?`]],
+["DevTools","Memory","senior",[`heap snapshot, сравнение снимков`,`поиск утечек, detached DOM`,`allocation timeline`],[`Как доказать наличие утечки сравнением двух снимков?`,`Что такое detached DOM и как его найти в снимке?`,`Зачем allocation timeline и что он показывает?`,`Как понять, что именно держит объект в памяти (retainers)?`,`Почему память растёт даже после «закрытия» компонента?`]],
+["DevTools","Application","middle",[`storage: local/session/cookies/IndexedDB`,`Service Workers, Cache Storage`,`manifest, очистка хранилищ`],[`Где посмотреть и очистить все хранилища разом?`,`Как принудительно обновить «застрявший» Service Worker?`,`Где проверить, что PWA-манифест валиден?`,`Как посмотреть, что лежит в Cache Storage?`,`Зачем «Clear site data» при отладке кэша?`]],
+["DevTools","React DevTools","middle",[`дерево компонентов, props/state`,`Profiler — почему ре-рендер`,`подсветка ре-рендеров`],[`Как Profiler показывает, почему компонент ре-рендерился?`,`Как включить подсветку ре-рендеров и что она выявляет?`,`Как найти компонент, который тормозит коммит?`,`Чем «commit» в Profiler отличается от рендера?`,`Как посмотреть текущие пропсы и хуки компонента?`]],
+["DevTools","Lighthouse","middle",[`аудит performance/a11y/SEO/best practices`,`метрики и подсказки по улучшению`,`можно гонять в CI`],[`Что именно аудитит Lighthouse, кроме скорости?`,`Почему лабораторные метрики Lighthouse расходятся с реальными (RUM)?`,`Как использовать его рекомендации, не гоняясь за 100/100?`,`Зачем гонять Lighthouse в CI?`,`Чем lab data отличается от field data?`]],
+// ===== Сеть/HTTP =====
+["Сеть/HTTP","Как грузится страница (DNS → рендер)","middle",[`DNS → TCP/TLS → HTTP-запрос → ответ`,`парсинг HTML, загрузка ресурсов`,`рендеринг и интерактивность`],[`Что происходит от ввода URL до первого пикселя — по шагам?`,`Где в цепочке чаще всего теряется время?`,`Зачем нужен DNS и что такое его кэш?`,`Как TLS-рукопожатие влияет на задержку первого запроса?`,`Почему критичные ресурсы стоит грузить раньше прочих?`]],
+["Сеть/HTTP","HTTP-методы и идемпотентность","junior",[`GET/POST/PUT/PATCH/DELETE`,`идемпотентны: GET/PUT/DELETE (POST — нет)`,`семантика методов`],[`Почему повтор POST опасен, а повтор PUT — нет?`,`Чем PUT отличается от PATCH по семантике?`,`Что значит «безопасный» метод и какие они?`,`Почему GET нельзя использовать для изменения данных?`,`Как идемпотентность помогает при ретраях?`]],
+["Сеть/HTTP","Коды статусов","junior",[`2xx/3xx/4xx/5xx`,`частые: 200/201/301/400/401/403/404/500`,`смысл каждой группы`],[`Чем 401 отличается от 403 по смыслу?`,`Когда вернуть 400, а когда 422?`,`Чем 301 отличается от 302 для SEO и кэша?`,`Что значит 304 и как он экономит трафик?`,`Почему ошибки клиента и сервера разнесены на 4xx и 5xx?`]],
+["Сеть/HTTP","HTTP-заголовки","middle",[`Content-Type / Accept`,`Authorization`,`Cache-Control, CORS-заголовки`],[`Что случится, если отправить JSON без Content-Type?`,`Чем Accept отличается от Content-Type?`,`Где и как передают токен авторизации?`,`Какие заголовки управляют кэшированием?`,`Зачем сервер шлёт Access-Control-Allow-* заголовки?`]],
+["Сеть/HTTP","HTTP/2 и HTTP/3","middle+",[`мультиплексирование, сжатие заголовков`,`vs HTTP/1.1, keep-alive`,`HTTP/3 на QUIC (поверх UDP)`],[`Какую проблему HTTP/1.1 (head-of-line blocking) решает мультиплексирование?`,`Почему в HTTP/2 «склейка» спрайтов и доменный шардинг стали вредны?`,`Зачем HTTP/3 ушёл на UDP/QUIC?`,`Что такое сжатие заголовков (HPACK) и зачем оно?`,`Где HTTP/2 всё ещё страдает от head-of-line, а HTTP/3 нет?`]],
+["Сеть/HTTP","REST","junior+",[`ресурсы, методы как действия, статусы`,`stateless`,`версионирование`],[`Что значит stateless и почему это важно для масштабирования?`,`Как спроектировать URL для вложенных ресурсов?`,`Почему «глаголы в URL» — антипаттерн REST?`,`Как версионировать API и какие есть подходы?`,`Где REST неудобен и почему появился GraphQL?`]],
+["Сеть/HTTP","GraphQL","middle",[`один эндпоинт, клиент берёт нужные поля`,`схема, queries/mutations`,`over/under-fetching`],[`Как GraphQL убирает over- и under-fetching?`,`Какие новые проблемы он создаёт (N+1, кэширование)?`,`Чем кэширование в GraphQL сложнее, чем в REST?`,`Что такое схема и почему она ценна для команды?`,`Когда REST проще и лучше GraphQL?`]],
+["Сеть/HTTP","CORS","middle",[`same-origin policy`,`Access-Control-Allow-*`,`preflight (OPTIONS)`],[`Что такое same-origin policy и от чего она защищает?`,`Когда срабатывает preflight-запрос и почему?`,`Почему CORS чинится на сервере, а не на клиенте?`,`Чем «простой» запрос отличается от требующего preflight?`,`Как credentials (cookie) усложняют настройку CORS?`]],
+["Сеть/HTTP","HTTP-кэширование","middle",[`Cache-Control (max-age/no-store)`,`ETag + If-None-Match → 304`,`Last-Modified`],[`Чем no-cache отличается от no-store?`,`Как работает валидация через ETag и ответ 304?`,`Почему хешированные имена файлов позволяют кэшировать навечно?`,`Чем «свежесть» (max-age) отличается от валидации?`,`Как сбросить кэш у пользователей после деплоя?`]],
+["Сеть/HTTP","WebSocket / SSE / polling","middle",[`polling / long-polling`,`SSE — поток сервер→клиент`,`WebSocket — двусторонний канал`],[`Когда хватит polling, а когда нужен WebSocket?`,`Чем SSE проще WebSocket и где его потолок?`,`Почему WebSocket дороже в инфраструктуре?`,`Как SSE переживает разрыв соединения (reconnect)?`,`Что выбрать для чата, а что для биржевого тикера?`]],
+["Сеть/HTTP","AbortController и отмена запросов","junior+",[`signal в fetch`,`отмена устаревших запросов`,`гонки запросов`],[`Что такое гонка запросов и как AbortController её убивает?`,`Как отменить fetch при размонтировании компонента?`,`Почему быстрый набор в поиске создаёт гонку и как чинить?`,`Что произойдёт с промисом отменённого fetch?`,`Можно ли переиспользовать один signal для нескольких запросов?`]],
+["Сеть/HTTP","JWT","middle",[`header.payload.signature`,`stateless`,`access + refresh токены`],[`Из чего состоит JWT и что в payload не секрет?`,`Почему JWT нельзя «отозвать» так же легко, как сессию?`,`Зачем нужен refresh-токен при коротком access?`,`Где безопаснее хранить токены на клиенте?`,`Что подписывает signature и зачем?`]],
+["Сеть/HTTP","OAuth 2.0 / OIDC","middle+",[`делегирование доступа`,`flow: authorization code`,`OIDC — аутентификация поверх OAuth`],[`Какую задачу решает OAuth и почему это не аутентификация?`,`Чем OIDC дополняет OAuth?`,`Зачем authorization code flow с PKCE для SPA?`,`Почему implicit flow считается устаревшим?`,`Что такое scope и зачем согласие пользователя?`]],
+// ===== Тулинг =====
+["Тулинг","Vite","middle",[`dev на нативных ESM + esbuild`,`prod-сборка через Rollup`,`мгновенный HMR`],[`Почему Vite в dev стартует мгновенно, не собирая весь бандл?`,`Почему в проде Vite всё же собирает через Rollup, а не esbuild?`,`Как нативные ESM в браузере делают dev быстрым?`,`Чем HMR отличается от полной перезагрузки?`,`В чём Vite уступает Webpack по гибкости?`]],
+["Тулинг","Webpack","middle",[`entry/output, loaders, plugins`,`строит граф зависимостей`,`гибкий конфиг`],[`Что делает loader, а что plugin — в чём разница?`,`Как Webpack строит граф зависимостей?`,`Почему Webpack медленнее Vite в dev?`,`За что отвечает chunk splitting и runtimeChunk?`,`Когда мощь Webpack ещё нужна вместо Vite?`]],
+["Тулинг","Транспиляция (Babel/swc)","middle",[`JSX/TS → совместимый JS`,`пресеты (preset-env, react)`,`polyfills vs синтаксис`],[`Чем транспиляция синтаксиса отличается от полифила?`,`Что делает preset-env и при чём browserslist?`,`Почему swc/esbuild быстрее Babel?`,`Зачем нужен core-js и когда он раздувает бандл?`,`Что транспилируется, а что требует рантайм-полифила (Promise)?`]],
+["Тулинг","Tree-shaking","middle",[`удаление неиспользуемого кода`,`требует ESM`,`флаг sideEffects`],[`Почему CommonJS обычно не поддаётся tree-shaking?`,`Что такое sideEffects в package.json и зачем он?`,`Почему import всего из lodash убивает tree-shaking?`,`Как побочные эффекты модуля мешают удалению кода?`,`Как проверить, что мёртвый код реально вырезан?`]],
+["Тулинг","Code splitting (dynamic import)","middle",[`import() режет на чанки`,`сплит по роутам/компонентам`,`ленивая загрузка`],[`Как dynamic import создаёт отдельный чанк?`,`По какому принципу резать бандл — роуты, библиотеки?`,`Чем грозит слишком мелкое дробление на чанки?`,`Как предзагрузить чанк до того, как он понадобится?`,`Почему вендорный чанк выносят отдельно?`]],
+["Тулинг","ESLint","junior+",[`правила качества и поиск ошибок`,`конфиг, плагины`,`автофикс`],[`Чем ESLint отличается от Prettier по задаче?`,`Что такое flat config и зачем переход на него?`,`Как правило ESLint может отловить реальный баг (exhaustive-deps)?`,`Зачем плагины (react-hooks, import) и что они проверяют?`,`Когда отключать правило оправдано, а когда это лень?`]],
+["Тулинг","Prettier","junior+",[`автоформатирование`,`единый стиль кода`,`интеграция с ESLint`],[`Почему форматирование лучше доверить инструменту, а не ревью?`,`Как Prettier и ESLint разделяют зоны ответственности?`,`Как избежать конфликтов между ними (eslint-config-prettier)?`,`Что Prettier принципиально не делает (и почему)?`,`Зачем форматировать на pre-commit?`]],
+["Тулинг","npm / yarn / pnpm","junior+",[`установка зависимостей, скрипты`,`pnpm экономит диск (симлинки)`,`workspaces`],[`Как pnpm экономит диск и ускоряет установку?`,`Что такое phantom dependencies и как pnpm их предотвращает?`,`Зачем workspaces в монорепо?`,`Чем npm ci отличается от npm install?`,`Почему важно коммитить lock-файл?`]],
+["Тулинг","semver и lock-файлы","junior+",[`major.minor.patch`,`^ (минор), ~ (патч)`,`lock фиксирует точные версии`],[`Что значат ^1.2.3 и ~1.2.3 на практике?`,`Почему сборка «вдруг сломалась» без изменений в коде (и при чём lock)?`,`Зачем нужен lock-файл, если есть semver?`,`Когда мажорное обновление безопасно, а когда нет?`,`Как обновлять зависимости, не ломая прод?`]],
+["Тулинг","Переменные окружения","junior+",[`.env, import.meta.env / process.env`,`режимы dev/prod`,`секреты не во фронт-бандл`],[`Почему любой «секрет» во фронт-бандле — не секрет?`,`Чем dev-сборка отличается от prod по env?`,`Почему переменные с префиксом (VITE_) попадают в бандл, а другие нет?`,`Где тогда хранить настоящие секреты?`,`Как переключать конфиг между окружениями?`]],
+["Тулинг","Source maps","junior+",[`связь сборки и исходника`,`читаемая отладка и стектрейсы`,`в проде скрывать/отдавать отдельно`],[`Как source map превращает минифицированный стектрейс в читаемый?`,`Стоит ли отдавать source maps в проде — за и против?`,`Как сервис мониторинга (Sentry) использует source maps?`,`Чем inline source map отличается от внешнего?`,`Почему без них дебаг продакшна — боль?`]],
+["Тулинг","Storybook и дизайн-система","middle",[`изолированная разработка компонентов`,`каталог состояний (stories)`,`документация и визуальные тесты`],[`Какую проблему решает изолированная разработка компонента?`,`Как stories документируют состояния и крайние случаи?`,`Чем Storybook помогает дизайн-системе и команде?`,`Как сюда вписываются визуальные регресс-тесты?`,`Чем разработка в Storybook лучше, чем «гонять» в приложении?`]],
+// ===== Тесты =====
+["Тесты","Пирамида тестов","junior+",[`unit / integration / e2e`,`форма пирамиды`,`стоимость и скорость`],[`Почему unit-тестов много, а e2e мало?`,`Что такое «ледяной гриб» и чем он плох?`,`Чем интеграционные тесты ценнее изолированных unit для UI?`,`Как стоимость и хрупкость растут вверх по пирамиде?`,`Что тестировать на каждом уровне на примере формы логина?`]],
+["Тесты","Jest / Vitest","middle",[`describe/it/expect, матчеры`,`beforeEach, хуки`,`Vitest для Vite-проектов`],[`Почему Vitest удобнее в Vite-проекте, чем Jest?`,`Что такое матчер и как написать свой?`,`Зачем beforeEach и чем опасно общее состояние между тестами?`,`Как изолировать тесты, чтобы они не влияли друг на друга?`,`Чем фейковые таймеры помогают тестировать setTimeout?`]],
+["Тесты","Моки и спаи","middle",[`jest.fn / vi.fn, spyOn`,`фейковые таймеры`,`моки модулей`],[`Чем мок отличается от спая по назначению?`,`Как замокать сетевой модуль и зачем?`,`Почему чрезмерное мокирование делает тест бесполезным?`,`Как проверить, что функция вызвана с нужными аргументами?`,`Как тестировать дебаунс с фейковыми таймерами?`]],
+["Тесты","MSW (мок сети)","middle",[`перехват запросов на уровне worker`,`реалистичные тесты API`,`vs моки fetch`],[`Чем перехват на уровне сети честнее мока fetch?`,`Почему один и тот же MSW работает в тестах и в dev?`,`Как тестировать состояния loading/error без бэкенда?`,`Что MSW проверяет, чего не проверит мок функции?`,`Когда MSW избыточен?`]],
+["Тесты","React Testing Library","middle",[`тестировать поведение, не реализацию`,`getByRole / getByText`,`userEvent, findBy для async`],[`Почему «тестируй поведение, не реализацию» так важно?`,`Почему getByRole предпочтительнее getByTestId?`,`Чем userEvent честнее fireEvent?`,`Когда нужен findBy, а когда getBy?`,`Почему тест, проверяющий state, — хрупкий?`]],
+["Тесты","Снапшот-тесты","middle",[`сохранённый снимок UI/данных`,`ловит непреднамеренные изменения`,`риск хрупкости`],[`Что реально ловят снапшоты, а что — нет?`,`Почему огромные снапшоты бесполезны?`,`Когда «обновить снапшот» — это маскировка бага?`,`Чем снапшот данных полезнее снапшота всего DOM?`,`Где визуальный регресс лучше снапшота разметки?`]],
+["Тесты","E2E (Playwright/Cypress)","middle+",[`реальный браузер по сценариям`,`критичные флоу: оплата, авторизация`,`борьба с flaky-тестами`],[`Какие сценарии стоит покрывать e2e, а какие нет?`,`Почему e2e бывают flaky и как с этим бороться?`,`Чем Playwright отличается от Cypress по архитектуре?`,`Почему не стоит покрывать e2e всё подряд?`,`Как ускорить медленный e2e-набор?`]],
+["Тесты","Coverage","middle",[`процент покрытия кода`,`индикатор, а не цель`,`что тестировать в первую очередь`],[`Почему 100% покрытия не равно «нет багов»?`,`Чем покрытие веток отличается от покрытия строк?`,`Как высокое покрытие может усыплять бдительность?`,`Что покрывать в первую очередь при ограниченном времени?`,`Когда гонка за coverage вредит проекту?`]],
+// ===== Performance =====
+["Performance","Core Web Vitals (LCP, INP, CLS)","middle",[`LCP < 2.5с — загрузка крупного контента`,`INP — отзывчивость на ввод (заменил FID)`,`CLS < 0.1 — визуальная стабильность`],[`Что чаще всего портит LCP и как это чинить?`,`Чем INP лучше отражает отзывчивость, чем старый FID?`,`Что вызывает скачки CLS и как их предотвратить?`,`Почему лабораторные и полевые метрики расходятся?`,`Какую метрику оптимизировать первой для типичного сайта?`]],
+["Performance","Lazy loading","junior+",[`loading=lazy у картинок`,`React.lazy + Suspense для компонентов`,`IntersectionObserver`],[`Что НЕ стоит лениво грузить (LCP-картинку) и почему?`,`Чем loading=lazy отличается от ручного IntersectionObserver?`,`Как ленивая загрузка может ухудшить CLS, если не зарезервировать место?`,`Как лениво грузить тяжёлый компонент в React?`,`Где грань между ленивостью и лишними запросами?`]],
+["Performance","Resource hints","middle+",[`preload — критичное сейчас`,`prefetch — для будущей навигации`,`preconnect / dns-prefetch`],[`Чем preload отличается от prefetch по приоритету и моменту?`,`Зачем preconnect для стороннего домена (шрифты, аналитика)?`,`Чем злоупотребление preload вредит (конкуренция за полосу)?`,`Когда prefetch следующей страницы окупается?`,`Что делает dns-prefetch и насколько помогает?`]],
+["Performance","Оптимизация изображений","junior+",[`WebP/AVIF`,`srcset / sizes`,`width/height против CLS`],[`Как srcset и sizes отдают подходящий размер под устройство?`,`Почему указание width/height спасает от CLS?`,`Когда AVIF лучше WebP и какой фоллбэк?`,`Чем picture полезнее img для арт-дирекшена?`,`Как не загрузить картинку в 3000px на мобильный?`]],
+["Performance","Оптимизация шрифтов","middle",[`font-display: swap`,`preload и сабсеттинг шрифтов`,`FOIT / FOUT`],[`Чем FOIT хуже FOUT для пользователя?`,`Что делает font-display: swap и какой компромисс?`,`Зачем сабсеттинг шрифта и сколько он экономит?`,`Почему preload шрифта ускоряет первый текст?`,`Как self-hosting шрифтов влияет на приватность и скорость?`]],
+["Performance","Сжатие и минификация","middle",[`минификация JS/CSS`,`gzip / brotli на сервере`,`уменьшение размера бандла`],[`Чем минификация отличается от сжатия (brotli)?`,`Почему brotli обычно лучше gzip и где его минусы?`,`Как code splitting помогает не грузить лишнее?`,`Что важнее для скорости — размер бандла или число запросов?`,`Как найти, что именно раздувает бандл (analyzer)?`]],
+["Performance","Critical CSS","middle",[`инлайн критичных стилей`,`ускоряет первый рендер`,`остальной CSS — асинхронно`],[`Что такое «критичный» CSS и как его выделить?`,`Почему инлайн критичного CSS ускоряет первый рендер?`,`Какой минус у инлайна (кэширование, размер HTML)?`,`Как грузить остальной CSS, не блокируя рендер?`,`Чем это связано с FOUC?`]],
+// ===== Безопасность =====
+["Безопасность","XSS","middle",[`stored / reflected / DOM-based`,`dangerouslySetInnerHTML → DOMPurify`,`React экранирует вывод по умолчанию`],[`Как React защищает от XSS по умолчанию и где дыра?`,`Чем stored XSS опаснее reflected?`,`Когда dangerouslySetInnerHTML необходим и как обезопасить (DOMPurify)?`,`Как DOM-based XSS возникает без участия сервера?`,`Почему пользовательский href=javascript: — вектор атаки?`]],
+["Безопасность","CSRF","middle",[`запрос от имени пользователя с его cookie`,`CSRF-токены, SameSite`,`проверка Origin/Referer`],[`Как именно работает CSRF-атака по шагам?`,`Почему SameSite=Lax почти убивает CSRF?`,`Зачем CSRF-токен, если есть SameSite?`,`Почему JWT в заголовке (а не cookie) менее уязвим к CSRF?`,`Как проверка Origin/Referer помогает?`]],
+["Безопасность","CSP (Content-Security-Policy)","middle+",[`ограничивает источники скриптов/стилей`,`снижает риск XSS`,`директивы script-src и др.`],[`Как CSP превращает XSS в неисполнимый скрипт?`,`Чем nonce и hash в CSP лучше unsafe-inline?`,`Почему unsafe-inline сводит защиту CSP на нет?`,`Как внедрять CSP постепенно (report-only)?`,`Что CSP не защищает?`]],
+["Безопасность","Хранение токенов","middle",[`httpOnly cookie vs localStorage`,`XSS (localStorage) vs CSRF (cookie)`,`осознанный компромисс`],[`Почему localStorage уязвим к XSS, а httpOnly cookie — нет?`,`Какой компромисс с CSRF возникает при cookie?`,`Почему «храним access в памяти, refresh в httpOnly cookie» — частый паттерн?`,`Можно ли вообще защититься, если на сайте есть XSS?`,`Где хранить токен в SPA с учётом обоих рисков?`]],
+["Безопасность","HTTPS / TLS","junior+",[`шифрование, защита от MITM`,`сертификаты`,`нужен для многих Web API`],[`От чего конкретно защищает HTTPS (3 свойства)?`,`Что такое MITM и как TLS его предотвращает?`,`Почему многие Web API работают только по HTTPS?`,`Что проверяет браузер в сертификате?`,`Зачем HSTS поверх HTTPS?`]],
+["Безопасность","Clickjacking","middle",[`встраивание сайта в iframe и обман кликом`,`X-Frame-Options / frame-ancestors`,`защита от кликджекинга`],[`Как работает атака кликджекинга по шагам?`,`Чем frame-ancestors (CSP) современнее X-Frame-Options?`,`Почему запрет встраивания в iframe — основная защита?`,`Где clickjacking особенно опасен (лайки, переводы)?`,`Может ли JS-защита (frame busting) быть обойдена?`]],
+["Безопасность","Subresource Integrity (SRI)","middle+",[`хэш-проверка ресурса из CDN`,`атрибут integrity`,`защита от подмены скрипта`],[`От какой угрозы защищает SRI при загрузке с CDN?`,`Что произойдёт, если хэш не совпал?`,`Почему SRI и CORS на CDN часто идут вместе?`,`В чём минус SRI при частом обновлении ресурса?`,`Почему supply-chain атака опаснее, чем кажется?`]],
+["Безопасность","Уязвимости зависимостей","middle",[`npm audit`,`supply-chain атаки`,`обновления и lock-файлы`],[`Почему одна заражённая зависимость компрометирует весь фронт?`,`Что показывает npm audit и чему верить?`,`Как postinstall-скрипт пакета становится вектором атаки?`,`Зачем фиксировать версии и проверять lock?`,`Как минимизировать поверхность атаки (меньше зависимостей)?`]],
+// ===== Принципы =====
+["Принципы","ООП: 4 принципа","junior+",[`инкапсуляция, наследование, полиморфизм, абстракция`,`смысл каждого`,`во фронте — модули/классы/компоненты`],[`Как инкапсуляция проявляется в обычном React-компоненте?`,`Чем абстракция отличается от инкапсуляции?`,`Где полиморфизм встречается во фронте (один интерфейс, разные реализации)?`,`Почему наследование во фронте применяют редко?`,`Можно ли делать ООП без классов — как?`]],
+["Принципы","Композиция vs наследование","middle",[`наследование жёстко связывает`,`композиция гибче и проще`,`в React — children и хуки`],[`Почему «предпочитай композицию наследованию» — мантра фронта?`,`Какую проблему создаёт глубокая иерархия наследования?`,`Как заменить наследование композицией на примере компонента?`,`Чем хуки — это композиция логики?`,`Когда наследование всё же уместно?`]],
+["Принципы","SRP — Single Responsibility","middle",[`одна причина для изменения`,`один модуль/компонент — одна задача`,`разделение ответственности`],[`Что значит «одна причина для изменения» на примере компонента?`,`Как понять, что компонент нарушает SRP?`,`Чем God-компонент опасен для поддержки?`,`Как SRP связан с переиспользуемостью и тестами?`,`Где грань между SRP и избыточным дроблением?`]],
+["Принципы","OCP — Open/Closed","middle",[`открыт для расширения, закрыт для изменения`,`расширение через абстракции/пропсы`,`меньше правок старого кода`],[`Как добавить новый вариант кнопки, не трогая существующий код?`,`Как пропсы и композиция реализуют OCP в React?`,`Почему цепочка if/switch по типу часто нарушает OCP?`,`Чем плагины/стратегии помогают соблюдать OCP?`,`Где слепое следование OCP — оверинжиниринг?`]],
+["Принципы","LSP — Liskov Substitution","middle+",[`подтип заменяет базовый без поломок`,`соблюдение контракта`,`во фронте — пропсы/интерфейсы`],[`Что значит «нарушить контракт» подтипа на примере?`,`Как кастомный компонент-обёртка может нарушить LSP кнопки?`,`Почему важно не сужать ожидания и не расширять требования?`,`Как LSP связан с типобезопасностью пропсов?`,`Приведи пример нарушения LSP в иерархии компонентов.`]],
+["Принципы","ISP — Interface Segregation","middle+",[`много узких интерфейсов вместо одного широкого`,`не навязывать лишние пропсы`,`разбиение больших пропсов`],[`Как «компонент с 30 пропсами» нарушает ISP?`,`Чем плохо заставлять клиента знать о неиспользуемых полях?`,`Как разбить толстый интерфейс пропсов?`,`Как ISP связан с композицией компонентов?`,`Приведи пример узких интерфейсов вместо одного?`]],
+["Принципы","DIP — Dependency Inversion","middle+",[`зависеть от абстракций, не реализаций`,`внедрение зависимостей`,`во фронте — пропсы/контекст/сервисы`],[`Как внедрить зависимость в компонент через пропсы или контекст?`,`Почему прямой импорт конкретного API-клиента усложняет тесты?`,`Чем DIP помогает подменять реализацию (мок в тестах)?`,`Как DIP проявляется в провайдерах React?`,`Чем DIP отличается от ISP?`]],
+["Принципы","DRY — Don't Repeat Yourself","junior",[`не дублируй знание/логику`,`выноси в функции/хуки/компоненты`,`опасность преждевременного DRY`],[`Когда «дублирование» лучше неправильной абстракции?`,`Что дублируется на самом деле — код или знание?`,`Как преждевременный DRY создаёт хрупкую связанность?`,`Чем WET (write everything twice) иногда оправдан?`,`Как отличить вредный дубль от случайного совпадения кода?`]],
+["Принципы","KISS — Keep It Simple","junior",[`проще — лучше`,`избегать переусложнения`,`читаемость важнее «умности»`],[`Почему «умный» однострочник часто хуже простого кода?`,`Как KISS конфликтует с преждевременной оптимизацией?`,`Когда абстракция усложняет вместо упрощения?`,`Как измерить «простоту» — читаемостью или строками?`,`Приведи пример, где KISS победил «красивое» решение.`]],
+["Принципы","YAGNI — You Aren't Gonna Need It","junior+",[`не делай впрок`,`только нужное сейчас`,`меньше лишнего кода`],[`Почему «сделаю гибко на будущее» часто оборачивается мусором?`,`Как YAGNI конфликтует с OCP и как их мирить?`,`Чем опасны конфигурируемые «на все случаи» компоненты?`,`Где YAGNI неприменим (безопасность, миграции)?`,`Как отличить нужную гибкость от спекулятивной?`]],
+["Принципы","Single source of truth","middle",[`одно место истины для данных`,`остальное — производное`,`во фронте — стейт/стор`],[`Что ломается, когда одна и та же правда хранится в двух местах?`,`Почему производное состояние лучше вычислять, а не дублировать?`,`Как URL может быть источником истины для фильтров?`,`Чем рассинхрон двух источников опасен в UI?`,`Как это связано с controlled-компонентами?`]],
+["Принципы","Разделение ответственности (SoC)","middle",[`UI / бизнес-логика / данные раздельно`,`логику — в хуки и сервисы`,`тестируемость и поддержка`],[`Как вынести бизнес-логику из компонента и зачем?`,`Чем «компонент только про UI» удобнее для тестов?`,`Как слой сервисов отделяет данные от представления?`,`Где SoC граничит с оверинжинирингом?`,`Чем SoC отличается от SRP?`]],
+// ===== Паттерны =====
+["Паттерны","Observer / PubSub","middle",[`подписчики реагируют на события`,`издатель не знает о подписчиках`,`EventEmitter, шина событий, реактивность`],[`Чем Observer отличается от PubSub (прямая связь vs шина)?`,`Где паттерн уже живёт в браузере (addEventListener)?`,`Как он лежит в основе реактивности стейт-менеджеров?`,`Какой главный риск Observer (утечки, забытые отписки)?`,`Когда шина событий превращается в неотлаживаемый хаос?`]],
+["Паттерны","Singleton","middle",[`единственный экземпляр на приложение`,`глобальная точка доступа`,`риск скрытого глобального состояния`],[`Где singleton уместен во фронте (конфиг, клиент API)?`,`Почему singleton усложняет тестирование?`,`Чем модуль ES (один экземпляр на импорт) — естественный singleton?`,`Какие риски у скрытого глобального состояния?`,`Как заменить singleton внедрением зависимости?`]],
+["Паттерны","Factory","middle",[`создание объектов без new напрямую`,`инкапсуляция логики выбора реализации`,`фабричная функция/метод`],[`Какую проблему решает фабрика по сравнению с прямым new?`,`Как фабрика помогает выбрать реализацию по условию?`,`Где фабрики встречаются во фронте (createStore, createSlice)?`,`Чем фабричная функция удобнее класса-фабрики в JS?`,`Как фабрика связана с OCP?`]],
+["Паттерны","Strategy","middle",[`семейство взаимозаменяемых алгоритмов`,`выбор поведения в рантайме`,`вместо больших if/switch`],[`Как Strategy убирает разрастающийся switch?`,`Как передать стратегию через пропс или аргумент?`,`Где паттерн встречается (разные валидаторы, форматтеры)?`,`Чем Strategy связан с OCP и DIP?`,`Когда объект-словарь стратегий проще классов?`]],
+["Паттерны","Module pattern","middle",[`приватность через замыкание`,`публичный API, скрытые детали`,`предшественник ES-модулей`],[`Как замыкание создаёт приватность в module pattern?`,`Чем ES-модули заменили этот паттерн?`,`Как вернуть публичный API, скрыв внутренности?`,`Где module pattern ещё встречается (IIFE-обёртки)?`,`Чем он похож на инкапсуляцию в ООП?`]],
+// ===== Архитектура =====
+["Архитектура","Структура проекта (FSD)","middle",[`layer-based vs feature-based`,`FSD: app/pages/widgets/features/entities/shared`,`правила импортов между слоями`],[`Чем feature-based масштабируется лучше layer-based?`,`Какое главное правило импортов в FSD и зачем оно?`,`Что попадает в shared, а что в entities?`,`Как FSD борется со «спагетти» зависимостей?`,`Где FSD избыточен для маленького проекта?`]],
+["Архитектура","Атомарный дизайн","middle",[`atoms, molecules, organisms, templates, pages`,`переиспользуемость`,`дизайн-система`],[`Как разнести Button, SearchForm и Header по уровням?`,`Чем атомарный дизайн помогает дизайн-системе?`,`Где граница между molecule и organism размывается?`,`Как избежать «всё стало organism»?`,`Чем атомарный подход дополняет FSD?`]],
+["Архитектура","SSR / SSG / ISR / CSR","middle+",[`CSR — рендер в браузере`,`SSR — на сервере на запрос; SSG — на сборке`,`ISR — инкрементальная регенерация`],[`Что выбрать для блога, дашборда и интернет-магазина?`,`Чем SSR помогает SEO и TTFB, и какой ценой?`,`Когда SSG невозможен (персонализация, частые изменения)?`,`Что решает ISR между SSG и SSR?`,`Какие данные нельзя рендерить на сервере?`]],
+["Архитектура","Server Components (Next.js)","middle+",[`рендер на сервере без JS на клиент`,`App Router`,`границы client/server`],[`Чем Server Components отличаются от классического SSR?`,`Что нельзя делать в Server Component (useState, обработчики)?`,`Как граница 'use client' влияет на размер бандла?`,`Зачем это всё — какую проблему решает RSC?`,`Как данные текут от серверного компонента к клиентскому?`]],
+["Архитектура","Гидратация","middle+",[`оживление SSR-разметки на клиенте`,`hydration mismatch (частый баг)`,`streaming / partial`],[`Что такое гидратация и зачем она нужна после SSR?`,`Что вызывает hydration mismatch и как его поймать?`,`Почему Date.now() или random в рендере ломают гидратацию?`,`Что такое streaming/partial hydration и зачем?`,`Чем «островная» архитектура снижает стоимость гидратации?`]],
+["Архитектура","Monorepo","middle+",[`Nx, Turborepo`,`общий код и единый тулинг`,`плюсы и минусы`],[`Какие проблемы решает монорепо для нескольких пакетов?`,`Чем кэширование задач (Turborepo/Nx) ускоряет CI?`,`Какие минусы у монорепо (границы, размер, права)?`,`Чем монорепо отличается от monolith?`,`Когда полирепо предпочтительнее?`]],
+["Архитектура","Микрофронтенды","senior",[`Module Federation`,`независимый деплой частей`,`трейд-оффы: автономность vs сложность`],[`Какую организационную проблему решают микрофронтенды?`,`Что такое Module Federation и как делят зависимости?`,`Какой ценой идёт независимый деплой (дубли, версии)?`,`Когда микрофронтенды — преждевременная сложность?`,`Как избежать дублирования React в нескольких бандлах?`]],
+// ===== Git/процессы =====
+["Git/процессы","Базовые команды Git","junior",[`add / commit / push / pull / clone`,`status / log / diff`,`staging area`],[`Зачем нужна staging area между рабочей копией и коммитом?`,`Чем git pull отличается от git fetch?`,`Что делает git reset --soft/--mixed/--hard?`,`Как отменить последний коммит, не потеряв изменения?`,`Чем commit --amend полезен и чем опасен?`]],
+["Git/процессы","Ветвление и merge","junior",[`branch / checkout / switch`,`merge`,`fast-forward vs merge-commit`],[`Чем fast-forward merge отличается от merge-commit?`,`Когда стоит делать --no-ff и зачем?`,`Почему долгоживущие ветки болезненны?`,`Что такое HEAD и detached HEAD?`,`Как ветки помогают параллельной работе команды?`]],
+["Git/процессы","Merge vs rebase","middle",[`merge сохраняет историю`,`rebase делает линейную`,`нельзя ребейзить общую ветку`],[`Почему нельзя ребейзить уже запушенную общую ветку?`,`Когда линейная история rebase ценнее правдивой истории merge?`,`Что произойдёт при rebase с конфликтами на каждом коммите?`,`Чем squash-merge удобен для истории main?`,`Как откатить неудачный rebase (reflog)?`]],
+["Git/процессы","rebase, cherry-pick, stash","middle",[`интерактивный rebase (squash/reorder)`,`cherry-pick отдельного коммита`,`stash для отложенных изменений`],[`Что делает интерактивный rebase кроме squash?`,`Когда cherry-pick оправдан, а когда это запах процесса?`,`Чем stash удобен и какие данные он не сохраняет?`,`Как переписать историю и не сломать коллег?`,`Что такое reflog и как он спасает после ошибки?`]],
+["Git/процессы","Разрешение конфликтов","junior+",[`маркеры конфликта в файле`,`выбор/слияние изменений`,`abort / continue`],[`Что означают маркеры конфликта и как их читать?`,`Почему частые маленькие мерджи снижают конфликты?`,`Как прервать мердж/ребейз и вернуться назад?`,`Почему конфликт логики страшнее конфликта текста?`,`Как избежать повторного разрешения тех же конфликтов (rerere)?`]],
+["Git/процессы","Стратегии веток","middle",[`git-flow vs trunk-based`,`именование веток`,`фиче-флаги`],[`Чем trunk-based удобнее git-flow для CI/CD?`,`Как фиче-флаги позволяют мержить незаконченное?`,`Какие минусы у долгоживущих фиче-веток?`,`Когда git-flow всё же оправдан (релизные циклы)?`,`Как часто мержить в main и почему чаще лучше?`]],
+["Git/процессы","Pull requests и код-ревью","junior+",[`маленькие PR с описанием`,`давать и принимать ревью`,`смотреть: логика/читаемость/тесты`],[`Почему маленький PR ревьюят качественнее большого?`,`На что смотреть в ревью в первую очередь?`,`Как давать обратную связь, не демотивируя?`,`Зачем описание и контекст в PR?`,`Что делать, если ревью затягивается, а блокирует работу?`]],
+["Git/процессы","CI/CD","middle",[`пайплайн lint, test, build, deploy`,`GitHub Actions / GitLab CI`,`триггеры и джобы`],[`Что такое CI и чем оно отличается от CD?`,`Какие шаги обязательны в пайплайне перед мержем?`,`Как кэширование зависимостей ускоряет CI?`,`Чем continuous delivery отличается от continuous deployment?`,`Зачем гонять тесты и линт до мержа, а не после?`]],
+["Git/процессы","Conventional Commits и semver","junior+",[`feat/fix/chore/...`,`semver major.minor.patch`,`автогенерация changelog`],[`Как Conventional Commits автоматизируют версионирование и changelog?`,`Какой коммит поднимает major, какой minor, какой patch?`,`Зачем единый формат сообщений команде?`,`Что значит breaking change и как его помечать?`,`Чем осмысленная история коммитов помогает при дебаге (bisect)?`]],
+["Git/процессы","Scrum / Kanban","junior",[`Scrum: спринты, роли, церемонии`,`Kanban: поток, WIP-лимиты`,`как участник команды`],[`Чем Scrum отличается от Kanban по ритму работы?`,`Что такое WIP-лимит и зачем он?`,`Какие церемонии в Scrum и зачем каждая?`,`Когда Kanban подходит лучше Scrum?`,`Что такое definition of done и зачем она?`]],
+// ===== Прод =====
+["Прод","Деплой и хостинг","junior+",[`статика на CDN vs SSR на сервере`,`Vercel/Netlify, контейнеры`,`атомарный деплой, откат`],[`Чем хостинг статики (SPA) отличается от хостинга SSR?`,`Зачем нужен атомарный деплой и быстрый откат?`,`Как настроить SPA-фоллбэк (все пути → index.html)?`,`Почему хешированные имена файлов важны для кэша при деплое?`,`Что такое blue-green и canary деплой?`]],
+["Прод","CDN и edge-кэширование","middle",[`раздача с ближайшего узла`,`кэш статики у края сети`,`инвалидация кэша`],[`Как CDN ускоряет загрузку для географически разных пользователей?`,`Чем edge-кэш отличается от кэша браузера?`,`Как инвалидировать CDN-кэш после деплоя?`,`Что такое edge-функции и зачем они?`,`Почему «закэшировали навсегда, а пользователи видят старое» — частая боль?`]],
+["Прод","Мониторинг ошибок (Sentry)","middle",[`сбор ошибок с прода`,`stack trace + source maps`,`контекст: версия, пользователь, breadcrumbs`],[`Зачем нужен мониторинг ошибок, если есть тесты?`,`Как source maps делают продакшн-стектрейс читаемым?`,`Что такое breadcrumbs и чем они помогают воспроизвести баг?`,`Как не утонуть в шуме (группировка, sampling)?`,`Почему ошибка «у пользователя», но не «у тебя» — норма, и как её ловить?`]],
+["Прод","Аналитика и метрики","middle",[`события и воронки`,`продуктовые vs технические метрики`,`Web Vitals в проде (RUM)`],[`Чем продуктовая аналитика отличается от мониторинга ошибок?`,`Что такое воронка и зачем её мерить?`,`Чем полевые Web Vitals (RUM) честнее лабораторных?`,`Как аналитика влияет на приватность и согласие (consent)?`,`Какие метрики смотреть, чтобы понять, что релиз не ухудшил UX?`]],
+["Прод","Feature flags и A/B-тесты","middle",[`включение фич без деплоя`,`постепенный раскат, killswitch`,`A/B — сравнение вариантов`],[`Как фиче-флаги развязывают деплой и релиз?`,`Зачем killswitch и постепенный раскат (rollout)?`,`Как A/B-тест помогает принять решение на данных?`,`Какой технический долг копят флаги, если их не убирать?`,`Как флаги связаны с trunk-based разработкой?`]],
+["Прод","Интернационализация (i18n)","middle",[`перевод строк, локали`,`числа/даты/множественное число (ICU)`,`направление текста (RTL)`],[`Почему конкатенация строк перевода ломается в других языках?`,`Как правильно обрабатывать множественное число (plural rules)?`,`Чем форматирование чисел и дат различается по локали?`,`Что нужно учесть для RTL-языков (арабский, иврит)?`,`Как организовать ленивую загрузку словарей перевода?`]],
+// ===== Алгоритмы =====
+["Алгоритмы","Big O","middle",[`оценка по времени и памяти`,`O(1), O(log n), O(n), O(n log n), O(n^2)`,`выбор структуры данных`],[`Почему вложенный цикл по одному массиву — это O(n^2)?`,`Как O(n log n) возникает в сортировках?`,`Чем амортизированная сложность (push в массив) отличается от худшего случая?`,`Когда O(n) с большой константой хуже O(n log n)?`,`Как оценить сложность по памяти, а не только по времени?`]],
+["Алгоритмы","Хеш-таблица","middle",[`ключ в значение за O(1) в среднем`,`коллизии`,`объект / Map`],[`Почему доступ O(1) «в среднем», а не всегда?`,`Что такое коллизия и как её разрешают?`,`Когда хеш-таблица деградирует до O(n)?`,`Как через хеш-таблицу решить two sum за O(n)?`,`Чем Map лучше объекта как хеш-таблица?`]],
+["Алгоритмы","Стек","middle",[`LIFO — последний вошёл, первый вышел`,`push / pop`,`кейсы: история, скобки, рекурсия`],[`Как стеком проверить баланс скобок?`,`Почему вызовы функций — это стек (call stack)?`,`Как реализовать undo через стек?`,`Чем стек помогает обойти дерево без рекурсии?`,`Что такое переполнение стека и откуда оно?`]],
+["Алгоритмы","Очередь","middle",[`FIFO — первый вошёл, первый вышел`,`enqueue / dequeue`,`кейсы: BFS, очередь задач`],[`Почему BFS использует очередь, а DFS — стек?`,`Как реализовать очередь эффективно (не shift у массива)?`,`Что такое дек (deque) и где он нужен?`,`Где очередь встречается в браузере (event loop, задачи)?`,`Чем приоритетная очередь отличается от обычной?`]],
+["Алгоритмы","Связный список","middle",[`узлы со ссылками на следующий`,`вставка/удаление O(1)`,`нет произвольного доступа`],[`Почему вставка в начало списка O(1), а в массив O(n)?`,`Как развернуть односвязный список?`,`Как найти цикл в списке (быстрый и медленный указатель)?`,`Чем список проигрывает массиву по кэш-локальности?`,`Когда связный список реально нужен во фронте?`]],
+["Алгоритмы","Дерево и BST","middle",[`узлы и потомки`,`BST: левый < корень < правый`,`поиск/вставка O(log n) при балансе`],[`Почему поиск в BST O(log n), но может стать O(n)?`,`Что даёт обход in-order у BST?`,`Зачем нужны самобалансирующиеся деревья?`,`Где деревья встречаются во фронте (DOM, VDOM)?`,`Как проверить, что дерево — валидный BST?`]],
+["Алгоритмы","Куча (heap)","middle+",[`бинарная куча: мин или макс`,`приоритетная очередь`,`вставка/извлечение O(log n)`],[`Какую задачу куча решает лучше отсортированного массива?`,`Как найти top-K элементов через кучу за O(n log k)?`,`Чем мин-куча отличается от макс-кучи по применению?`,`Почему извлечение минимума O(log n), а не O(1) после первого?`,`Где приоритетная очередь нужна на практике?`]],
+["Алгоритмы","Граф","middle+",[`вершины и рёбра`,`матрица vs список смежности`,`направленный / взвешенный`],[`Когда список смежности лучше матрицы по памяти?`,`Как смоделировать граф зависимостей задач?`,`Чем направленный граф отличается от ненаправленного по обходу?`,`Как обнаружить цикл в графе?`,`Где графы встречаются во фронте (роутинг, зависимости)?`]],
+["Алгоритмы","Бинарный поиск","junior+",[`только на отсортированном массиве`,`деление пополам, сравнение с серединой`,`O(log n)`],[`Почему обязательна отсортированность и что без неё?`,`Где легко ошибиться в границах (off-by-one, mid)?`,`Как бинарный поиск применить не к массиву, а к ответу?`,`Чем O(log n) выигрывает на больших данных против O(n)?`,`Как найти первое вхождение, а не любое?`]],
+["Алгоритмы","Two pointers","middle",[`два указателя с концов или разной скоростью`,`пары с суммой, палиндром, слияние`,`обычно O(n)`],[`Как двумя указателями найти пару с суммой в отсортированном массиве?`,`Как проверить палиндром двумя указателями?`,`Почему это O(n), а наивный перебор O(n^2)?`,`Как «быстрый и медленный» указатель ищут цикл?`,`Когда two pointers требует предварительной сортировки?`]],
+["Алгоритмы","Скользящее окно","middle",[`окно по массиву/строке`,`подмассивы/подстроки с условием`,`O(n) вместо O(n^2)`],[`Как окном найти самую длинную подстроку без повторов?`,`Чем окно переменного размера отличается от фиксированного?`,`Почему окно даёт O(n) против O(n^2) перебора?`,`Как понять, что задача решается окном?`,`Что хранить в окне, чтобы не пересчитывать всё заново?`]],
+["Алгоритмы","Частотный анализ","middle",[`считаем частоты в Map`,`анаграммы, two sum`,`обмен памяти на скорость`],[`Как проверить, что две строки — анаграммы, за O(n)?`,`Как частотная карта ускоряет поиск дубликатов?`,`Какой trade-off памяти и скорости у этого приёма?`,`Как найти первый неповторяющийся символ?`,`Почему Map/объект тут естественнее массива?`]],
+["Алгоритмы","Префиксные суммы","middle",[`накопленная сумма`,`сумма диапазона за O(1)`,`предобработка массива`],[`Как префиксные суммы дают сумму диапазона за O(1)?`,`Какой ценой (память, предобработка) это достигается?`,`Как найти подмассив с заданной суммой через префиксы?`,`Когда префиксные суммы не помогают (частые изменения)?`,`Как идея обобщается на двумерный случай?`]],
+["Алгоритмы","Рекурсия","middle",[`базовый случай + шаг к нему`,`стек вызовов и переполнение`,`деревья, divide-and-conquer`],[`Что обязательно должно быть, чтобы рекурсия завершилась?`,`Чем грозит отсутствие или недостижимость базового случая?`,`Когда рекурсию лучше переписать в цикл (стек переполняется)?`,`Что такое хвостовая рекурсия и оптимизируется ли она в JS?`,`Как рекурсия естественна для обхода дерева/DOM?`]],
+["Алгоритмы","BFS / DFS","middle",[`DFS — стек/рекурсия, идём вглубь`,`BFS — очередь, идём по уровням`,`BFS даёт кратчайший путь в невзвешенном графе`],[`Почему BFS находит кратчайший путь, а DFS нет?`,`Когда DFS предпочтительнее BFS по памяти?`,`Как избежать зацикливания при обходе графа (visited)?`,`Как обойти DOM в ширину и в глубину?`,`Чем рекурсивный DFS рискует на глубоком графе?`]],
+["Алгоритмы","Сортировки","middle",[`quicksort / mergesort — O(n log n)`,`встроенный sort сравнивает как строки`,`стабильность сортировки`],[`Почему [1,2,10].sort() даёт [1,10,2] и как починить?`,`Чем mergesort отличается от quicksort по стабильности и памяти?`,`Что значит стабильная сортировка и когда это важно?`,`Какой худший случай у quicksort и как его избегают?`,`Когда O(n) сортировка возможна (counting/radix)?`]],
+["Алгоритмы","Backtracking","middle+",[`перебор с возвратом`,`перестановки, комбинации, судоку`,`отсечение ветвей`],[`Как backtracking перебирает все перестановки?`,`Зачем и как делают отсечение ветвей (pruning)?`,`Чем backtracking отличается от полного перебора?`,`Почему сложность часто экспоненциальная?`,`Как backtracking решает судоку или расстановку ферзей?`]],
+["Алгоритмы","Динамическое программирование","middle+",[`перекрывающиеся подзадачи`,`мемоизация (сверху) / табуляция (снизу)`,`Фибоначчи, рюкзак`],[`Какие два признака задачи намекают на DP?`,`Чем мемоизация (сверху-вниз) отличается от табуляции (снизу-вверх)?`,`Как наивный рекурсивный Фибоначчи превращается в O(n) с мемоизацией?`,`Что такое оптимальная подструктура?`,`Как уменьшить память DP с O(n) до O(1) в простых задачах?`]],
+];
+
+const ORDER = ["HTML/CSS","JavaScript","TypeScript","React","Роутинг","State","Браузер","DevTools","Сеть/HTTP","Тулинг","Тесты","Performance","Безопасность","Принципы","Паттерны","Архитектура","Git/процессы","Прод","Алгоритмы"];
+const LEVEL_ORDER = ["intern","junior","junior+","middle","middle+","senior"];
+const CARDS = RAW.map((r,i)=>({id:i, cat:r[0], topic:r[1], level:r[2], detail:r[3], questions:r[4]}));
+
+const STATUS = {
+  dont:   {label:'Не знаю', weight:12, tag:'#f15c7f'},
+  recall: {label:'Частично',weight:4,  tag:'#f6b541'},
+  know:   {label:'Знаю',    weight:1,  tag:'#3ecf8e'},
+};
+const UNSEEN_WEIGHT = 10; // неоценённые карточки выпадают часто
+const LEVELS = {'intern':'#8a93a6','junior':'#3ecf8e','junior+':'#33d6c6','middle':'#5b9bff','middle+':'#7c6cff','senior':'#f6b541'};
+const KEY = 'fe_trainer_v5';
+
+const Store = {
+  async get(k){
+    try{ if(window.storage){ const r=await window.storage.get(k); return r?r.value:null; } }catch(e){}
+    try{ return localStorage.getItem(k); }catch(e){ return null; }
+  },
+  async set(k,v){
+    try{ if(window.storage){ await window.storage.set(k,v); return; } }catch(e){}
+    try{ localStorage.setItem(k,v); }catch(e){}
+  }
+};
+
+let state = { status:{}, history:{}, filters:{cats:[],levels:[],status:'all'}, theme:'dark',
+              current:null, flipped:false, lastId:null, view:'study' };
+let msCat, msLevel;
+
+const fmt = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const today = () => fmt(new Date());
+
+async function load(){
+  const raw = await Store.get(KEY);
+  if(raw){ try{ Object.assign(state, JSON.parse(raw)); }catch(e){} }
+  if(!state.filters) state.filters={};
+  state.filters.cats = state.filters.cats||[];
+  state.filters.levels = state.filters.levels||[];
+  state.filters.status = state.filters.status||'all';
+  document.documentElement.setAttribute('data-theme', state.theme||'dark');
+  buildFilters();
+  fStatus.value=state.filters.status;
+  setView(state.view||'study', true);
+  renderStats(); renderEmpty();
+}
+function save(){ Store.set(KEY, JSON.stringify(state)); }
+function statusOf(id){ return state.status[id] || null; }
+function weightOf(id){ const s=statusOf(id); return s?STATUS[s].weight:UNSEEN_WEIGHT; }
+
+function pool(){
+  const f=state.filters;
+  return CARDS.filter(c=>{
+    if(f.cats.length && !f.cats.includes(c.cat)) return false;
+    if(f.levels.length && !f.levels.includes(c.level)) return false;
+    if(f.status!=='all' && statusOf(c.id)!==f.status) return false;
+    return true;
+  });
+}
+function draw(){
+  let p = pool();
+  if(p.length===0){ renderEmpty(true); return; }
+  if(p.length>1 && state.lastId!==null) p = p.filter(c=>c.id!==state.lastId);
+  const total = p.reduce((s,c)=>s+weightOf(c.id),0);
+  let roll = Math.random()*total, pick=p[0];
+  for(const c of p){ roll -= weightOf(c.id); if(roll<=0){ pick=c; break; } }
+  state.current=pick.id; state.lastId=pick.id; state.flipped=false;
+  renderCard();
+}
+function rate(s){
+  if(state.current===null) return;
+  state.status[state.current]=s;
+  const t=today(); state.history[t]=(state.history[t]||0)+1;
+  save(); renderStats();
+  if(state.view==='browse') renderBrowse();
+  draw();
+}
+
+function levelBadge(c){ const col=LEVELS[c.level]; return `<span class="level" style="color:${col};border-color:${col}66">${c.level}</span>`; }
+
+function renderCard(){
+  const c = CARDS.find(x=>x.id===state.current);
+  if(!c){ renderEmpty(); return; }
+  const s=statusOf(c.id);
+  const tag = s ? `<span class="statustag" style="color:${STATUS[s].tag};border:1px solid ${STATUS[s].tag}55">${STATUS[s].label}</span>` : '';
+  const esc=v=>String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const detail = c.detail.map(b=>`<li>${esc(b)}</li>`).join('');
+  const qs = c.questions.map(q=>`<li>${esc(q)}</li>`).join('');
+  cardHost.innerHTML = `
+    <div class="stage">
+      <div class="deck-edge deck-1"></div><div class="deck-edge deck-2"></div>
+      <div class="card ${state.flipped?'flipped':''}" id="theCard">
+        <div class="face front">
+          <div class="face-head"><span class="eyebrow">${c.cat}</span>${levelBadge(c)}</div>
+          <div class="topic">${c.topic}</div>
+          <div class="hint">
+            ${tag}
+            <span style="margin-left:auto">Раскрыть <span class="kbd">Space</span></span>
+          </div>
+        </div>
+        <div class="face back">
+          <div class="face-head"><span class="eyebrow">${c.cat}</span>${levelBadge(c)}</div>
+          <div class="topic">${c.topic}</div>
+          <div class="back-cols">
+            <div class="back-col col-know"><h4>Что нужно знать</h4><div class="scroll"><ul class="detail">${detail}</ul></div></div>
+            <div class="back-col col-q"><h4>Вопросы</h4><div class="scroll"><ol class="qs">${qs}</ol></div></div>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  document.getElementById('theCard').onclick = flip;
+  drawBtn.textContent='Следующая →';
+  renderRate();
+}
+function renderEmpty(noMatch){
+  cardHost.innerHTML = `<div class="empty">
+      <div class="big">${noMatch?'Под фильтры ничего не подходит':'Готов учиться?'}</div>
+      <div>${noMatch?'Смягчи фильтры выше.':'Нажми «Выдать тему» — выпадет карточка. Что плохо знаешь, будет попадаться чаще.'}</div>
+    </div>`;
+  drawBtn.textContent='Выдать тему ↵'; rateHost.innerHTML='';
+}
+function flip(){
+  if(state.current===null) return;
+  state.flipped=!state.flipped;
+  document.getElementById('theCard').classList.toggle('flipped',state.flipped);
+  renderRate();
+}
+function renderRate(){
+  if(state.current===null || !state.flipped){ rateHost.innerHTML=''; return; }
+  rateHost.innerHTML = `<div class="rate">
+      <button class="r-dont" data-s="dont">Не знаю<small>1</small></button>
+      <button class="r-recall" data-s="recall">Частично<small>2</small></button>
+      <button class="r-know" data-s="know">Знаю<small>3</small></button>
+    </div>`;
+  rateHost.querySelectorAll('button').forEach(b=> b.onclick=()=>rate(b.dataset.s));
+}
+
+function renderStats(){
+  const c={dont:0,recall:0,know:0};
+  CARDS.forEach(x=>{ const s=statusOf(x.id); if(s) c[s]++; });
+  const total=CARDS.length;
+  mPct.textContent=Math.round(c.know/total*100)+'%';
+  const seg=bar.querySelectorAll('i');
+  seg[0].style.width=c.know/total*100+'%';
+  seg[1].style.width=c.recall/total*100+'%';
+  seg[2].style.width=c.dont/total*100+'%';
+  chips.innerHTML=[['d-know','Знаю',c.know],['d-recall','Частично',c.recall],['d-dont','Не знаю',c.dont]]
+    .map(([cl,l,n])=>`<span class="chip"><span class="dot ${cl}"></span>${l} ${n}</span>`).join('');
+  document.getElementById('streak').textContent=currentStreak();
+}
+function currentStreak(){
+  let s=0; const d=new Date();
+  if(!state.history[fmt(d)]){ d.setDate(d.getDate()-1); if(!state.history[fmt(d)]) return 0; }
+  while(state.history[fmt(d)]){ s++; d.setDate(d.getDate()-1); }
+  return s;
+}
+
+/* ----- мультиселект ----- */
+function makeMulti(host, options, allLabel, onChange){
+  let sel=[];
+  const labelOf=v=>(options.find(o=>o.value===v)||{}).label||v;
+  const btn=document.createElement('button'); btn.type='button'; btn.className='ms-btn';
+  const panel=document.createElement('div'); panel.className='ms-panel';
+  panel.innerHTML=`<div class="ms-actions"><button type="button" data-act="none">Сбросить</button></div>`+
+    options.map(o=>`<label class="ms-opt"><input type="checkbox" value="${o.value}"><span>${o.label}</span></label>`).join('');
+  host.appendChild(btn); host.appendChild(panel);
+  function summary(){ btn.textContent = sel.length===0?allLabel : sel.length===1?labelOf(sel[0]) : sel.length+' выбрано'; }
+  btn.onclick=e=>{ e.stopPropagation(); const open=panel.classList.contains('open'); closeAllMs(); if(!open){ panel.classList.add('open'); btn.classList.add('open'); } };
+  panel.onclick=e=>e.stopPropagation();
+  panel.querySelector('[data-act="none"]').onclick=()=>{ sel=[]; panel.querySelectorAll('input').forEach(i=>i.checked=false); summary(); onChange(sel.slice()); };
+  panel.querySelectorAll('input').forEach(inp=> inp.onchange=()=>{
+    sel=[...panel.querySelectorAll('input:checked')].map(i=>i.value); summary(); onChange(sel.slice());
+  });
+  return { set(arr){ sel=(arr||[]).slice(); panel.querySelectorAll('input').forEach(i=>i.checked=sel.includes(i.value)); summary(); } };
+}
+function closeAllMs(){
+  document.querySelectorAll('.ms-panel.open').forEach(p=>p.classList.remove('open'));
+  document.querySelectorAll('.ms-btn.open').forEach(b=>b.classList.remove('open'));
+}
+document.addEventListener('click', closeAllMs);
+
+function buildFilters(){
+  const cats=ORDER.filter(cat=>CARDS.some(c=>c.cat===cat))
+    .map(cat=>({value:cat,label:`${cat} (${CARDS.filter(c=>c.cat===cat).length})`}));
+  msCat = makeMulti(document.getElementById('msCat'), cats, `Все темы (${CARDS.length})`,
+    sel=>{ state.filters.cats=sel; save(); renderEmpty(); });
+  msLevel = makeMulti(document.getElementById('msLevel'), LEVEL_ORDER.map(l=>({value:l,label:l})), 'Все уровни',
+    sel=>{ state.filters.levels=sel; save(); renderEmpty(); });
+  msCat.set(state.filters.cats); msLevel.set(state.filters.levels);
+}
+
+function renderBrowse(){
+  browseView.innerHTML = ORDER.filter(cat=>CARDS.some(c=>c.cat===cat)).map(cat=>{
+    const items=CARDS.filter(c=>c.cat===cat).slice()
+      .sort((a,b)=>LEVEL_ORDER.indexOf(a.level)-LEVEL_ORDER.indexOf(b.level));
+    const known=items.filter(c=>statusOf(c.id)==='know').length;
+    const rows=items.map(c=>{
+      const col=LEVELS[c.level], s=statusOf(c.id), dot=s?STATUS[s].tag:'#3a4254';
+      return `<div class="row" data-id="${c.id}">
+        <span class="rdot" style="background:${dot}"></span>
+        <span class="rtopic">${c.topic}</span>
+        <span class="rlevel" style="color:${col};border-color:${col}55">${c.level}</span></div>`;
+    }).join('');
+    return `<div class="grp"><h3><span class="chev">▸</span>${cat}<span class="count">${known}/${items.length} знаю</span></h3>
+      <div class="rows"><div class="rows-inner">${rows}</div></div></div>`;
+  }).join('');
+  browseView.querySelectorAll('.grp h3').forEach(h=> h.onclick=()=>h.parentElement.classList.toggle('open'));
+  browseView.querySelectorAll('.row').forEach(r=> r.onclick=()=>{
+    state.current=+r.dataset.id; state.lastId=state.current; state.flipped=false;
+    setView('study'); renderCard(); flip();
+  });
+}
+
+function setView(v, silent){
+  state.view=v; if(!silent) save();
+  studyView.classList.toggle('on',v==='study');
+  browseView.classList.toggle('on',v==='browse');
+  filters.style.display = v==='study' ? 'flex' : 'none';   // фильтры только на экране карточек
+  viewSeg.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.view===v));
+  if(v==='browse') renderBrowse();
+}
+
+let toastT;
+function toast(msg){ toast_.textContent=msg; toast_.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>toast_.classList.remove('show'),1800); }
+
+const cardHost=document.getElementById('cardHost'), rateHost=document.getElementById('rateHost'),
+  drawBtn=document.getElementById('drawBtn'), mPct=document.getElementById('mPct'), bar=document.getElementById('bar'),
+  chips=document.getElementById('chips'), fStatus=document.getElementById('fStatus'),
+  filters=document.getElementById('filters'),
+  studyView=document.getElementById('studyView'), browseView=document.getElementById('browseView'),
+  viewSeg=document.getElementById('viewSeg'), toast_=document.getElementById('toast');
+
+drawBtn.onclick=draw;
+fStatus.onchange=()=>{state.filters.status=fStatus.value;save();renderEmpty();};
+viewSeg.querySelectorAll('button').forEach(b=> b.onclick=()=>setView(b.dataset.view));
+document.getElementById('themeBtn').onclick=()=>{
+  state.theme=state.theme==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme',state.theme); save();
+};
+document.getElementById('resetBtn').onclick=()=>{
+  if(confirm('Сбросить весь прогресс и историю? Это нельзя отменить.')){
+    state.status={}; state.history={}; state.current=null; state.flipped=false; save();
+    renderStats(); renderEmpty(); if(state.view==='browse') renderBrowse(); toast('Сброшено');
+  }
+};
+document.getElementById('exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({status:state.status,history:state.history},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='frontend-trainer-progress.json'; a.click(); toast('Прогресс выгружен');
+};
+const fileInput=document.getElementById('fileInput');
+document.getElementById('importBtn').onclick=()=>fileInput.click();
+fileInput.onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ try{ const d=JSON.parse(rd.result);
+    if(d.status) state.status=d.status; if(d.history) state.history=d.history;
+    save(); renderStats(); if(state.view==='browse') renderBrowse(); toast('Прогресс загружен');
+  }catch(err){ toast('Не удалось прочитать файл'); } };
+  rd.readAsText(f); fileInput.value='';
+};
+
+document.addEventListener('keydown',e=>{
+  if(['INPUT','SELECT','TEXTAREA'].includes(e.target.tagName)) return;
+  if(e.code==='Space'){ e.preventDefault();
+    if(state.current===null) draw(); else if(!state.flipped) flip(); else draw();
+  }
+  if(e.code==='Enter'){ e.preventDefault(); draw(); }
+  if(state.flipped && state.current!==null){
+    if(e.key==='1') rate('dont'); if(e.key==='2') rate('recall'); if(e.key==='3') rate('know');
+  }
+});
+
+load();
+</script>
+</body>
+</html>
